@@ -40,8 +40,6 @@ get_knowledge_schemas = {
     'float_args': [],
 }
 
-
-
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
