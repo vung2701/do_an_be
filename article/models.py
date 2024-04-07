@@ -8,7 +8,6 @@ import uuid
 from knowledge.models import Knowledge
 from src_code.models import SrcCode
 from user import models as user_models
-# Create your models here.
 
 class Article(models.Model):
     article_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,db_index=True)
@@ -68,6 +67,7 @@ class Article(models.Model):
             'published_on': article.published_on,
             'image': article.image.name,
             'content': article.content if get_full else article.content[:2000],
+            'src_code': [src_code.id for src_code in article.src_code.all()],
             'knowledge': [knowledge.id for knowledge in article.knowledge.all()],
             'reference_link': article.reference_link,
             'spotlight': article.spotlight, 'spotlight_image': article.spotlight_image.name,
@@ -98,7 +98,7 @@ class Article(models.Model):
         }
 
     def __str__(self):
-        return f'{self.title}-{self.author}-{self.published_on}'
+        return f'{self.title}-{self.author_user}-{self.published_on}'
 
 class Comment(models.Model):
     parent_article = models.ForeignKey(to=Article, on_delete=models.CASCADE, related_name='parent_article',
