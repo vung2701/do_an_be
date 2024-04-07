@@ -76,7 +76,7 @@ def create_new_user(*args, **kwargs):
 def activate_user(uidb64, token):
     try:
         email = force_str(urlsafe_base64_decode(uidb64))
-        user = models.AuthUser.objects.filter(email=email).first()
+        user = models.User.objects.filter(email=email).first()
     except(TypeError, ValueError, OverflowError):
         user = None
 

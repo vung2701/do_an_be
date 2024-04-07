@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'my_utils',
     'user',
     'knowledge',
-    'src_code'
+    'src_code',
+    'article'
 ]
 
 MIDDLEWARE = [
