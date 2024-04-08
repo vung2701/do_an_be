@@ -12,7 +12,8 @@ from user import models as user_models
 class Article(models.Model):
     article_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True,db_index=True)
     title = models.CharField(max_length=255)
-    author_user = models.ForeignKey(to=Auth_User, related_name='author_user', on_delete=models.CASCADE,
+    author = models.CharField(max_length=255, blank=True, null=True)
+    author_user = models.ForeignKey(to=user_models.User, related_name='author_user', on_delete=models.CASCADE,
                                     blank=True, null=True)
     author_description = models.TextField(default='Please do not leave me blank')
     published_on = models.DateField()
@@ -59,6 +60,7 @@ class Article(models.Model):
         return {
             'article_id': article.article_id,
             'title': article.title,
+            'author': article.author,
             'author_user_id': author_user_id,
             'author_img': author_user_profile.image.name,
             'author_user_name': author_user_profile.first_name + ' ' + author_user_profile.last_name,
