@@ -54,6 +54,7 @@ class Article(models.Model):
 
     def article_to_dict(self, get_full=True):
         article = self
+        print(article.author_user.base_user)
         author_user_profile = user_models.Profile.objects.filter(base_user=article.author_user.base_user).first()
         author_user_id = author_user_profile.user_id_profile if author_user_profile else ''
 

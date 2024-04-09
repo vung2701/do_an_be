@@ -63,3 +63,59 @@ def get_article(request, params):
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
+    
+
+    
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+# @permission_classes((IsAuthenticated,))
+# @avt_permission_required(perm=['news.view_article'])
+@schema(schema=get_article_schemas)
+def article_like(request, params):
+    if request.method == 'POST':
+        article = Article.objects.filter(article_id=params.get('article_id')).first()
+        if article:
+            if params.get('like_auth') != '':
+                article.likes += 1
+                auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
+                auth_user_id = auth_user_profile.base_user_id
+                base_user = Auth_User.objects.filter(id=auth_user_id).first()
+                liker = User.objects.filter(base_user=base_user).first()
+                article.like_list.add(liker)
+                article.like_auth.add(base_user)
+                article.save()
+            ret = dict(error=0, article=utils.obj_to_dict(article))
+            return JsonResponse(data=ret)
+        else:
+            ret = dict(error=1, message='Article not found')
+            return JsonResponse(status=400, data=ret)
+    else:
+        return HttpResponse(status=403)
+
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication,))
+# @permission_classes((IsAuthenticated,))
+# @avt_permission_required(perm=['news.change_article'])
+@schema(schema=get_article_schemas)
+def article_unlike(request, params):
+    if request.method == 'POST':
+        article = Article.objects.filter(article_id=params.get('article_id')).first()
+        if params.get('like_auth') != '':
+            article.likes -= 1
+            auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
+            auth_user_id = auth_user_profile.base_user_id
+            base_user = Auth_User.objects.filter(id=auth_user_id).first()
+            liker = User.objects.filter(base_user=base_user).first()
+            article.like_list.remove(liker)
+            article.like_auth.remove(base_user)
+            article.save()
+            ret = dict(error=0, article=utils.obj_to_dict(article))
+            return JsonResponse(data=ret)
+        else:
+            ret = dict(error=1, message='No article found')
+            return JsonResponse(status=400, data=ret)
+    else:
+        return HttpResponse(status=403)

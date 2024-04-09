@@ -6,4 +6,6 @@ from . import views
 
 urlpatterns = [
     path('get_all', views.get_article),
+    path('like', views.article_like),
+    path('unlike', views.article_unlike),
 ]
