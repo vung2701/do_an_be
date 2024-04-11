@@ -119,3 +119,65 @@ def article_unlike(request, params):
             return JsonResponse(status=400, data=ret)
     else:
         return HttpResponse(status=403)
+    
+    
+get_comment_schemas = {
+    'properties': {'title': 'title', 'description': 'description', 'parent_article': 'parent_article_id',
+                   'parent_comment': 'parent_comment__id', 'attachment': 'attachment', 'created_by': 'created_by',
+                   'created_by_first_name': 'created_by_first_name',
+                   'created_by_last_name': 'created_by_last_name',
+                   'created_by_image': 'created_by_image',
+                   'comment_id': 'comment_id', 'like_list': 'like_list', 'share_list': 'share_list',
+                   'like_auth': 'like_auth', 'share_auth': 'share_auth', },
+    'required': [],
+    'bool_args': [],
+    'int_args': ['parent_comment__id'],
+    'float_args': [],
+}
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_comment_schemas)
+def article_comment(request, params):
+    if request.method == 'POST':
+        base_user = Auth_User.objects.filter(id=request.user.id).first()
+        user = User.objects.filter(base_user=base_user).first()
+        comment = Comment.objects.create(
+            title=params.get('title'),
+            parent_article=Article.objects.filter(article_id=params.get('parent_article_id')).first(),
+            description=params.get('description'),
+            attachment=params.get('attachment'),
+            created_by = user
+        )
+        comment.created_by_first_name = comment.created_by.first_name
+        comment.created_by_last_name = comment.created_by.last_name
+        comment.save()
+        profile = Profile.objects.filter(user=comment.created_by).first()
+        comment.created_by_image = profile.image
+        if params.get('parent_comment__id') is not None:
+            parent_comment = Comment.objects.filter(id=int(params.get('parent_comment__id'))).first()
+            comment.parent_comment = parent_comment
+            comment.parent_article = parent_comment.parent_article
+        comment.save()
+        ret = dict(error=0, comment=utils.obj_to_dict(comment))
+        return JsonResponse(data=ret)
+    elif request.method == 'GET':
+        if params.get('parent_article_id'):
+            article = Article.objects.filter(article_id=params.get('parent_article_id')).first()
+            id = article.id
+            comments = Comment.objects.filter(parent_article=article)
+            article_id_value = request.GET.get('article_id')
+            request.GET = request.GET.copy()
+            request.GET['parent_article'] = id
+            payload = utils.get_payload(request.GET, get_comment_schemas['properties'])
+            ret = utils.get_data_in_page_and_fields(comments, 'comment', payload, request.GET)
+            return JsonResponse(ret)
+        else:
+            comments = Comment.objects.all()
+            comment_list = [comment.to_dict() for comment in comments]
+            ret = dict(error=0, comment=utils.obj_to_dict(comment_list))
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+
