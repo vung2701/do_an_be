@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'user',
     'knowledge',
     'src_code',
-    'article'
+    'article',
+    'post',
 ]
 
 MIDDLEWARE = [
