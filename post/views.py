@@ -8,7 +8,7 @@ from my_utils.schema import schema
 import logging
 import hashlib
 from .models import Post, CommentPost
-from user.models import Profile
+from user.models import Profile, User
 from django.contrib.auth.models import User as Auth_User
 from django.utils import timezone
 from datetime import datetime
@@ -52,27 +52,6 @@ def create_post(request, params):
 @api_view(['GET', 'POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication,))
 @schema(schema=get_post_schemas)
-def create_post(request, params):
-    if request.method == 'POST':
-        user_profile = Profile.objects.filter(user_id_profile=params.get('created_by')).first()
-        post, created = Post.objects.get_or_create(id=params.get('id'),created_by = user_profile.base_user)
-        if created:
-            post.created_on = timezone.now()
-
-        post.title = params.get('title')
-        post.description = params.get('description')
-        post.modified_on = timezone.now()
-        post.save()
-        ret = dict(error=0, post=utils.obj_to_dict(post))
-        return JsonResponse(data=ret)
-    else:
-        return HttpResponse(status=403)
-
-
-@csrf_exempt
-@api_view(['GET', 'POST'])
-@authentication_classes((SessionAuthentication, TokenAuthentication,))
-@schema(schema=get_post_schemas)
 def update(request, params):
     if request.method == 'POST':
         post = Post.objects.filter(post_id=params.get('post_id')).first()
@@ -94,8 +73,6 @@ def update(request, params):
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication,))
-# @permission_classes((IsAuthenticated,))
-# @avt_permission_required(perm=['news.view_article'])
 @schema(schema=get_post_schemas)
 def get_post(request, params):
     if request.method == 'GET':
@@ -123,6 +100,8 @@ def post_like(request, params):
                 auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
                 auth_user_id = auth_user_profile.base_user_id
                 base_user = Auth_User.objects.filter(id=auth_user_id).first()
+                liker = User.objects.filter(base_user=base_user).first()
+                post.like_list.add(liker)
                 post.like_auth.add(base_user)
                 post.save()
             ret = dict(error=0, article=utils.obj_to_dict(post))
@@ -146,12 +125,14 @@ def post_unlike(request, params):
             auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
             auth_user_id = auth_user_profile.base_user_id
             base_user = Auth_User.objects.filter(id=auth_user_id).first()
+            liker = User.objects.filter(base_user=base_user).first()
+            post.like_list.remove(liker)
             post.like_auth.remove(base_user)
             post.save()
             ret = dict(error=0, article=utils.obj_to_dict(post))
             return JsonResponse(data=ret)
         else:
-            ret = dict(error=1, message='No article found')
+            ret = dict(error=1, message='No post found')
             return JsonResponse(status=400, data=ret)
     else:
         return HttpResponse(status=403)
@@ -178,8 +159,7 @@ get_comment_schemas = {
 @schema(schema=get_comment_schemas)
 def post_comment(request, params):
     if request.method == 'POST':
-        if not request.user.has_perms(['news.add_comment']):
-            return JsonResponse(403)
+        print(params)
         post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
         base_user = Auth_User.objects.filter(id=request.user.id).first()
 
@@ -199,8 +179,6 @@ def post_comment(request, params):
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':
-        if not request.user.has_perms(['news.view_comment']):
-            return JsonResponse(403)
         if params.get('parent_post_id'):
             post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
             id = post.id

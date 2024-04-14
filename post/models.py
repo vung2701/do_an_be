@@ -19,6 +19,7 @@ class Post(models.Model):
     last_modified = models.DateTimeField(default=timezone.now)
     likes = models.PositiveIntegerField(default=0)
     like_auth = models.ManyToManyField(to=Auth_User, related_name='post_auth_liker', blank=True)
+    like_list = models.ManyToManyField(to=user_models.User, related_name='post_like_list', blank=True)
     comments = models.PositiveIntegerField(default=0)
     comment_list = models.ManyToManyField(to='post.CommentPost', related_name='post_comment_list', blank=True)
     comment_auth = models.ManyToManyField(to=Auth_User, related_name='post_auth_commenter', blank=True)
@@ -41,7 +42,7 @@ class Post(models.Model):
             'title': post.title,
             'content': post.content,
             "created_on": post.created_on,
-            'likes': post.likes,
+            'likes': post.likes, 'like_list': [like.id for like in post.like_list.all()],
             'like_auth': [
                 profile.user_id_profile
                 for user in post.like_auth.all()
@@ -51,11 +52,12 @@ class Post(models.Model):
             'comment_list': [comment.id for comment in post.comment_list.all()],
             'comment_auth': [comment.id for comment in post.comment_auth.all()],
             'created_by': author_user_id,
-            'created_by_image':author_user_profile.image.name,
-            'first_name_created_by': author_user_profile.first_name,
-            'last_name_created_by': author_user_profile.last_name,
-            'email_created_by': author_user_profile.email, 'company_created_by': author_user_profile.company,
-            'designation_created_by': author_user_profile.designation,
+            'created_by_image': author_user_profile.image.name if author_user_profile else None,
+            'first_name_created_by': author_user_profile.first_name if author_user_profile else None,
+            'last_name_created_by': author_user_profile.last_name if author_user_profile else None,
+            'email_created_by': author_user_profile.email if author_user_profile else None,
+            'school_created_by': author_user_profile.school if author_user_profile else None,
+            'major_created_by': author_user_profile.major if author_user_profile else None,
             'spotlight': post.spotlight, 'spotlight_image': post.spotlight_image.name,
             'spotlight_from': post.spotlight_from, 'spotlight_to': post.spotlight_to,
         }
