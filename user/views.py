@@ -171,7 +171,10 @@ user_logout_schemas = {
 def user_logout(request, params):
     if request.user and request.user.is_authenticated:
         logout(request)
-    return HttpResponseRedirect('/')
+        return HttpResponse('Logout success', status=200)
+    else {
+         return HttpResponse('Logout error', status=403)
+    }
 
 
 get_profile_schemas = {
