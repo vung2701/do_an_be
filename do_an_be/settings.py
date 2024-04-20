@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'src_code',
     'article',
     'post',
+    'unreg_user'
 ]
 
 MIDDLEWARE = [
