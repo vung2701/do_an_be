@@ -2,9 +2,12 @@ from __future__ import unicode_literals
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from knowledge.models import Knowledge
 from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from my_utils import utils
 from my_utils.schema import schema
+from post.models import Post
+from unreg_user.models import Device, IPObject, PublicUser, ReadingList, WebBrowser
 from .models import  Article, Comment
 from user.models import User, Profile
 from django.contrib.auth.models import User as Auth_User
@@ -181,3 +184,168 @@ def article_comment(request, params):
     else:
         return HttpResponse(status=403)
 
+
+get_spotlight_schemas = {
+    'properties': {'category': 'category', 'item_id': 'item_id', 'spotlight_image': 'spotlight_image',
+                   'spotlight_from': 'spotlight_from', 'spotlight_to': 'spotlight_to',
+                   'spotlight_title': 'spotlight_title',
+                   'spotlight_des': 'spotlight_des'},
+    'required': [],
+    'bool_args': [],
+    'int_args': [],
+    'float_args': [],
+}
+
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_spotlight_schemas)
+def get_spotlight(request, params):
+    """
+    Get office IPs
+    :param request:
+    :param params:
+    :return:
+    """
+    if request.method == 'GET':
+        # payload = utils.get_payload(request.GET, get_spotlight_schemas['properties'])
+        spotlight_article_items = Article.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
+                                                 spotlight_from__lte=timezone.now().date())
+        spotlight_list = [{'category': 'Article', 'item_id': spotlight_item.article_id,
+                           'spotlight_image': spotlight_item.spotlight_image.url,
+                           'spotlight_from': spotlight_item.spotlight_from,
+                           'spotlight_to': spotlight_item.spotlight_to,
+                           'spotlight_title': spotlight_item.title, }
+                          for spotlight_item in spotlight_article_items]
+        spotlight_post_items = Post.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
+                                                         spotlight_from__lte=timezone.now().date())
+        spotlight_post_list = [{'category': 'Post', 'item_id': spotlight_item.post_id,
+                                'spotlight_image': spotlight_item.spotlight_image.url,
+                           'spotlight_from': spotlight_item.spotlight_from,
+                           'spotlight_to': spotlight_item.spotlight_to,
+                           'spotlight_title': spotlight_item.title, }
+                          for spotlight_item in spotlight_post_items]
+        ret = dict(error=0, spotlight_article=spotlight_list,spotlight_post =spotlight_post_list)
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+
+
+get_knowledge = {
+    'properties': {'knowledge_id': 'knowledge_id', 'name': 'name'},
+    'required': [],
+    'bool_args': [],
+    'int_args': [],
+    'float_args': [],
+    'list_args': ['knowledge_id'],
+}
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_knowledge)
+def get_knowledge(request, params):
+    if request.method == 'GET':
+        if 'knowledge_id' in params:
+            knowledge_ids = params.get('knowledge_id')
+            knowledge_objects = Knowledge.objects.filter(knowledge_id__in=knowledge_ids)
+            knowledges_list = [utils.obj_to_dict(knowledge) for knowledge in knowledge_objects]
+            ret = {'error': 0, 'knowledges': knowledges_list}
+        else:
+            payload = utils.get_payload(request.GET, get_article_schemas['properties'])
+            ret = utils.get_data_in_page_and_fields(Knowledge, 'knowledge', payload, request.GET)
+        
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+
+
+
+get_article_public_schemas = {
+    'properties': {'ip_address': 'ip_address', 'web_browser': 'web_browser', 'article_id': 'article_id',
+                   'device': 'device'},
+    'required': ['article_id'],
+    'bool_args': [],
+    'int_args': [],
+    'float_args': [],
+}
+
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes(( TokenAuthentication,))
+@schema(schema=get_article_public_schemas)
+def api_get_article_details(request, params):
+    article_id = params.get('article_id')
+    article = Article.objects.filter(article_id=article_id).first()
+    if request.user.is_authenticated:
+        ret = dict(error=0, article=article.article_to_dict(get_full=True))
+        return JsonResponse(data=ret)
+    else:
+        device_params = params.get('device')
+        browser_params = params.get('web_browser')
+        ip_params = params.get('ip_address')
+        user_public = get_user_public(device_params, browser_params, ip_params)
+        reading_list, created = ReadingList.objects.get_or_create(public_user=user_public)
+        exists_in_reading_list = reading_list.read_articles.filter(id=article.id).exists()
+        if reading_list.remain <=0 :
+            if exists_in_reading_list:
+                ret = dict(error=0, article=article.article_to_dict(get_full=True,get_full_audio=False))
+                return JsonResponse(data=ret)
+            else:
+                ret = dict(error=0, article=article.article_to_dict(get_full=False,get_full_audio=False))
+                return JsonResponse(data=ret)
+        else:
+            if not exists_in_reading_list:
+                reading_list.remain -=1
+                reading_list.read_articles.add(article)
+                reading_list.save()
+            ret =dict(error=0, article=article.article_to_dict(get_full=True))
+            return JsonResponse(data=ret)
+
+
+def get_user_public(device, browser, ip):
+    if device is not None:
+        device_objects, created = Device.objects.get_or_create(custom_fingerprint=device)
+    if browser is not None:
+        web_browser_objects, created = WebBrowser.objects.get_or_create(custom_fingerprint=browser)
+    if ip is not None:
+        ip_object, created = IPObject.objects.get_or_create(ip_address=ip)
+    user_public, created = PublicUser.objects.get_or_create(web_browser=web_browser_objects)
+    if created:
+        if device is not None:
+            user_public.device = device_objects
+        if ip is not None:
+            user_public.ip = ip_object
+        user_public.save()
+    return user_public
+
+get_article_knowledge_type = {
+    'properties': {'knowledge_type_id': 'knowledge_type_id'},
+    'required': [],
+    'bool_args': [],
+    'int_args': [],
+    'float_args': [],
+}
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_article_knowledge_type)
+def get_article_knowledge_type(request, params):
+    if request.method == 'GET':
+        if 'knowledge_type_id' in params:
+            print(params)
+            knowledge_type_id = params.get('knowledge_type_id')
+            knowledge_objects = Knowledge.objects.filter(knowledge_type__knowledge_type_id=knowledge_type_id)
+            articles = Article.objects.filter(knowledge__in=knowledge_objects)
+            articles_list = [utils.obj_to_dict(article) for article in articles]
+            ret = {'error': 0, 'articles': articles_list}
+        else:
+            payload = utils.get_payload(request.GET, get_article_schemas['properties'])
+            ret = utils.get_data_in_page_and_fields(Article, 'article', payload, request.GET)
+        
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
