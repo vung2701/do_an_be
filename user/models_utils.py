@@ -76,14 +76,14 @@ def create_new_user(*args, **kwargs):
 def activate_user(uidb64, token):
     try:
         email = force_str(urlsafe_base64_decode(uidb64))
-        user = models.User.objects.filter(email=email).first()
+        user = models.AuthUser.objects.filter(email=email).first()
     except(TypeError, ValueError, OverflowError):
         user = None
 
     if user and user.is_active:
         return True
     if user is not None and account_activation_token.check_token(user, token):
-        if not user.is_active:
+        if user.is_active is None:
             user.is_active = True
             user.save()
         return True

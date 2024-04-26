@@ -90,9 +90,9 @@ def verify_email(request, params, uidb64):
     """
     if request.method == 'GET':
         if models_utils.activate_user(uidb64, params.get('token')):
-            return HttpResponse('success')
+            return HttpResponseRedirect('')
         else:
-            return HttpResponse('False to register user', status=403)
+            return HttpResponse('False to register user', status=500)
     else:
         return HttpResponse(status=403)
 
