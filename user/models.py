@@ -41,7 +41,7 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField(unique=True, null=True)
-    image = models.ImageField(upload_to='user_profile', null=True, blank=True, default='/media/user_profile/default.png')
+    image = models.ImageField(upload_to='user_profile', null=True, blank=True, default='user_profile/default.png')
     school = models.CharField(max_length=255, blank=True, null=True)
     major = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=1000, blank=True, null=True)

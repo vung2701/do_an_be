@@ -79,11 +79,10 @@ def activate_user(uidb64, token):
         user = models.AuthUser.objects.filter(email=email).first()
     except(TypeError, ValueError, OverflowError):
         user = None
-
     if user and user.is_active:
         return True
     if user is not None and account_activation_token.check_token(user, token):
-        if user.is_active is None:
+        if not user.is_active:
             user.is_active = True
             user.save()
         return True

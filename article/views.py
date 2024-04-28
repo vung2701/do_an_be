@@ -144,13 +144,14 @@ get_comment_schemas = {
 @schema(schema=get_comment_schemas)
 def article_comment(request, params):
     if request.method == 'POST':
+        print(request.user.id)
         base_user = Auth_User.objects.filter(id=request.user.id).first()
         user = User.objects.filter(base_user=base_user).first()
+        print(user)
         comment = Comment.objects.create(
             title=params.get('title'),
             parent_article=Article.objects.filter(article_id=params.get('parent_article_id')).first(),
             description=params.get('description'),
-            attachment=params.get('attachment'),
             created_by = user
         )
         comment.created_by_first_name = comment.created_by.first_name
@@ -158,11 +159,11 @@ def article_comment(request, params):
         comment.save()
         profile = Profile.objects.filter(user=comment.created_by).first()
         comment.created_by_image = profile.image
-        if params.get('parent_comment__id') is not None:
-            parent_comment = Comment.objects.filter(id=int(params.get('parent_comment__id'))).first()
-            comment.parent_comment = parent_comment
-            comment.parent_article = parent_comment.parent_article
-        comment.save()
+        # if params.get('parent_comment__id') is not None:
+        #     parent_comment = Comment.objects.filter(id=int(params.get('parent_comment__id'))).first()
+        #     comment.parent_comment = parent_comment
+        #     comment.parent_article = parent_comment.parent_article
+        # comment.save()
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':

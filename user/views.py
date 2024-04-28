@@ -209,7 +209,7 @@ def _get_profile(request, params):
 
                 ret = dict(error=0, profile=profiles.profile_to_dict())
             else:
-                request_profile = {'user_id_profile': profile.user_id_profile, 'first_name':profile.first_name,
+                request_profile = {'user_id_profile': profile.user_id_profile, 'first_name': profile.first_name,
                                'last_name':profile.last_name,'image': profile.image.name, 'school': profile.school,
                                 'major': profile.major}
                 ret = dict(error=0, profile=request_profile)

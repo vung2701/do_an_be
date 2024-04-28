@@ -50,9 +50,10 @@ def create_post(request, params):
 
 @csrf_exempt
 @api_view(['GET', 'POST'])
-@authentication_classes((SessionAuthentication, TokenAuthentication,))
+@authentication_classes(( TokenAuthentication,))
 @schema(schema=get_post_schemas)
 def update(request, params):
+    print(params)
     if request.method == 'POST':
         post = Post.objects.filter(post_id=params.get('post_id')).first()
         if (request.user) != post.created_by:
@@ -196,3 +197,4 @@ def post_comment(request, params):
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
+    
