@@ -17,7 +17,7 @@ import os
 
 # Create your views here.
 get_post_schemas = {
-    'properties': {'title': 'title', 'image': 'image', 'description': 'description', 'created_on': 'created_on',
+    'properties': {'title': 'title', 'image': 'image', 'content': 'content', 'created_on': 'created_on',
                    'created_by': 'created_by', 'likes': 'likes', 'like_auth': 'like_auth', 'comments': 'comments',
                    'comment_list': 'comment_list', 'comment_auth': 'comment_auth', 'post_id': 'post_id', 'id': 'id'},
     'required': [],
@@ -39,7 +39,7 @@ def create_post(request, params):
             post.created_on = timezone.now()
             post.created_by = user_profile.base_user
         post.title = params.get('title')
-        post.description = params.get('description')
+        post.content = params.get('content')
         post.modified_on = timezone.now()
         post.save()
         ret = dict(error=0, post=utils.obj_to_dict(post))
@@ -53,7 +53,6 @@ def create_post(request, params):
 @authentication_classes(( TokenAuthentication,))
 @schema(schema=get_post_schemas)
 def update(request, params):
-    print(params)
     if request.method == 'POST':
         post = Post.objects.filter(post_id=params.get('post_id')).first()
         if (request.user) != post.created_by:
@@ -61,8 +60,8 @@ def update(request, params):
             return JsonResponse(status=403, data=ret)
         if params.get('title'):
             post.title = params.get('title')
-        if params.get('description'):
-            post.description = params.get('description')
+        if params.get('content'):
+            post.content = params.get('content')
         post.modified_on = timezone.now()
         post.save()
         ret = dict(error=0, post=utils.obj_to_dict(post))
@@ -160,7 +159,6 @@ get_comment_schemas = {
 @schema(schema=get_comment_schemas)
 def post_comment(request, params):
     if request.method == 'POST':
-        print(params)
         post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
         base_user = Auth_User.objects.filter(id=request.user.id).first()
 
@@ -180,6 +178,7 @@ def post_comment(request, params):
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':
+        print(params)
         if params.get('parent_post_id'):
             post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
             id = post.id
