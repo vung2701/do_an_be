@@ -15,4 +15,5 @@ urlpatterns = [
     path('profile/get', views.get_profile),
     path('profile/update', views.edit_profile, name='edit_profile'),
     path('upload_image', views.upload_user_image, name='upload_user_image'),
+    path('new_members', views.get_new_member, name='get_new_member'),
 ]

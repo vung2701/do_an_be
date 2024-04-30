@@ -47,6 +47,8 @@ class Profile(models.Model):
     location = models.CharField(max_length=1000, blank=True, null=True)
     phone = models.BigIntegerField(blank=True, null=True)
     DOB = models.DateField(blank=True, null=True)
+    modified_on = models.DateTimeField(default=timezone.now)
+    created_on = models.DateTimeField(default=timezone.now)
     def __str__(self):
         return f'{self.user.__str__()} Profile'
 

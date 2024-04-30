@@ -339,3 +339,24 @@ def upload_user_image(request, params):
     else:
         return JsonResponse(status=403, data={'error': 'function is not ready yet!'})
 
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+# @authentication_classes((TokenAuthentication,))
+# @permission_classes((IsAuthenticated,))
+@schema(schema=get_profile_schemas)
+def get_new_member(request, params):
+    if request.method == 'GET':
+        today = datetime.now()
+        start_date = today.date() - timedelta(days=30)
+        new_members = Profile.objects.filter().order_by('-created_on')[:6]
+        project_list = [{'user_id': profile.user_id_profile,
+                         'first_name': profile.first_name, 'last_name': profile.last_name,
+                         'email': profile.email, 'image': profile.image.name, 'school': profile.school,
+                         'major': profile.major, 'created_on': profile.created_on} for profile in
+                        new_members]
+        ret = dict(error=0, profile=project_list)
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+

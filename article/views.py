@@ -232,12 +232,12 @@ def get_spotlight(request, params):
 
 
 get_knowledge = {
-    'properties': {'knowledge_id': 'knowledge_id', 'name': 'name'},
+    'properties': {'knowledge_ids': 'knowledge_ids', 'name': 'name'},
     'required': [],
     'bool_args': [],
     'int_args': [],
     'float_args': [],
-    'list_args': ['knowledge_id'],
+    'list_args': ['knowledge_ids'],
 }
 
 @csrf_exempt
@@ -246,10 +246,12 @@ get_knowledge = {
 @schema(schema=get_knowledge)
 def get_knowledge(request, params):
     if request.method == 'GET':
-        if 'knowledge_id' in params:
-            knowledge_ids = params.get('knowledge_id')
+        knowledge_ids = request.GET.getlist('knowledge_ids[]')
+        if knowledge_ids:
             knowledge_objects = Knowledge.objects.filter(knowledge_id__in=knowledge_ids)
+            print(knowledge_objects)
             knowledges_list = [utils.obj_to_dict(knowledge) for knowledge in knowledge_objects]
+            print(knowledges_list)
             ret = {'error': 0, 'knowledges': knowledges_list}
         else:
             payload = utils.get_payload(request.GET, get_article_schemas['properties'])
@@ -348,3 +350,50 @@ def get_article_knowledge_type(request, params):
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
+    
+    get_spotlight_schemas = {
+    'properties': {'category': 'category', 'item_id': 'item_id', 'spotlight_image': 'spotlight_image',
+                   'spotlight_from': 'spotlight_from', 'spotlight_to': 'spotlight_to',
+                   'spotlight_title': 'spotlight_title',
+                   'spotlight_des': 'spotlight_des'},
+    'required': [],
+    'bool_args': [],
+    'int_args': [],
+    'float_args': [],
+}
+
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication,))
+@schema(schema=get_spotlight_schemas)
+def get_spotlight(request, params):
+    """
+    Get office IPs
+    :param request:
+    :param params:
+    :return:
+    """
+    if request.method == 'GET':
+        # payload = utils.get_payload(request.GET, get_spotlight_schemas['properties'])
+        spotlight_article_items = Article.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
+                                                 spotlight_from__lte=timezone.now().date())
+        spotlight_list = [{'category': 'Article', 'item_id': spotlight_item.article_id,
+                           'spotlight_image': spotlight_item.spotlight_image.url,
+                           'spotlight_from': spotlight_item.spotlight_from,
+                           'spotlight_to': spotlight_item.spotlight_to,
+                           'spotlight_title': spotlight_item.title, }
+                          for spotlight_item in spotlight_article_items]
+        spotlight_post_items = Post.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
+                                                         spotlight_from__lte=timezone.now().date())
+        spotlight_post_list = [{'category': 'Post', 'item_id': spotlight_item.post_id,
+                                'spotlight_image': spotlight_item.spotlight_image.url,
+                           'spotlight_from': spotlight_item.spotlight_from,
+                           'spotlight_to': spotlight_item.spotlight_to,
+                           'spotlight_title': spotlight_item.title, }
+                          for spotlight_item in spotlight_post_items]
+        ret = dict(error=0, spotlight_article=spotlight_list,spotlight_post =spotlight_post_list)
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+    
