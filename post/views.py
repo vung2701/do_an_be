@@ -178,7 +178,6 @@ def post_comment(request, params):
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':
-        print(params)
         if params.get('parent_post_id'):
             post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
             id = post.id

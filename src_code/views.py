@@ -47,8 +47,8 @@ get_src_code_schemas = {
 @schema(schema=get_src_code_schemas)
 def get_src_code(request, params):
     if request.method == 'GET':
-        language_id = params.get('language_id')
-        if language_id:
+        if params.get('language_id'):
+            language_id = params.get('language_id')
             language = models.LanguageCode.objects.filter(id=language_id).first()
             if language:
                 srcCodes = models.SrcCode.objects.filter(languages=language)
