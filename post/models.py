@@ -38,9 +38,9 @@ class Post(models.Model):
     def to_dict(self):
         post = self
         author_user_profile = user_models.Profile.objects.filter(base_user=post.created_by).first()
-       
+        author_user_id = author_user_profile.user_id_profile if author_user_profile else ''
 
-        return { author_user_id = author_user_profile.user_id_profile if author_user_profile else ''
+        return {
             'post_id': post.post_id,
             'title': post.title,
             'content': post.content,
