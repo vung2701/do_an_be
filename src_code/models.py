@@ -33,14 +33,14 @@ class SrcCode(models.Model):
         return self.name
 
     def to_dict(self):
-        language_names = [language.name for language in self.languages.all()]
         author_user_profile = user_models.Profile.objects.filter(base_user=self.created_by).first()
         author_user_id = author_user_profile.user_id_profile if author_user_profile else ''
         return {
             "src_code_id": self.src_code_id,
             "name": self.name,
             "content": self.content,
-            "languages": language_names,
+            "languages":  [language.name for language in self.languages.all()],
+            "language_ids":[language.id for language in self.languages.all()],
             'created_by': author_user_id,
             'created_by_image': author_user_profile.image.name if author_user_profile else None,
         }

@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+from my_utils import utils
+
 from . import models
 from my_utils.schema import schema
 
@@ -52,14 +54,16 @@ def get_src_code(request, params):
             language = models.LanguageCode.objects.filter(id=language_id).first()
             if language:
                 srcCodes = models.SrcCode.objects.filter(languages=language)
-                srcCodes_list = [srcCode.to_dict() for srcCode in srcCodes]
-                return JsonResponse({'error': 0, 'src_codes': srcCodes_list})
+                # srcCodes_list = [srcCode.to_dict() for srcCode in srcCodes]
+                payload = utils.get_payload(request.GET, get_src_code_schemas['properties'])
+                ret = utils.get_data_in_page_and_fields(srcCodes, 'srcCode', {}, request.GET)
+                return JsonResponse(data=ret)
             else:
                 return JsonResponse({'error': 'Language not found'}, status=404)
         else:
-            srcCodes = models.SrcCode.objects.all()
-            srcCodes_list = [srcCode.to_dict() for srcCode in srcCodes]
-            return JsonResponse({'error': 0, 'src_codes': srcCodes_list})
+            payload = utils.get_payload(request.GET, get_src_code_schemas['properties'])
+            ret = utils.get_data_in_page_and_fields(models.SrcCode, 'srcCode', payload, request.GET)
+            return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
 

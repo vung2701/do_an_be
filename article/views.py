@@ -249,9 +249,7 @@ def get_knowledge(request, params):
         knowledge_ids = request.GET.getlist('knowledge_ids[]')
         if knowledge_ids:
             knowledge_objects = Knowledge.objects.filter(knowledge_id__in=knowledge_ids)
-            print(knowledge_objects)
             knowledges_list = [utils.obj_to_dict(knowledge) for knowledge in knowledge_objects]
-            print(knowledges_list)
             ret = {'error': 0, 'knowledges': knowledges_list}
         else:
             payload = utils.get_payload(request.GET, get_article_schemas['properties'])
