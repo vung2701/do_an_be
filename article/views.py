@@ -349,15 +349,15 @@ def get_article_knowledge_type(request, params):
     else:
         return HttpResponse(status=403)
     
-    get_spotlight_schemas = {
-    'properties': {'category': 'category', 'item_id': 'item_id', 'spotlight_image': 'spotlight_image',
-                   'spotlight_from': 'spotlight_from', 'spotlight_to': 'spotlight_to',
-                   'spotlight_title': 'spotlight_title',
-                   'spotlight_des': 'spotlight_des'},
-    'required': [],
-    'bool_args': [],
-    'int_args': [],
-    'float_args': [],
+get_spotlight_schemas = {
+'properties': {'category': 'category', 'item_id': 'item_id', 'spotlight_image': 'spotlight_image',
+                'spotlight_from': 'spotlight_from', 'spotlight_to': 'spotlight_to',
+                'spotlight_title': 'spotlight_title',
+                'spotlight_des': 'spotlight_des'},
+'required': [],
+'bool_args': [],
+'int_args': [],
+'float_args': [],
 }
 
 

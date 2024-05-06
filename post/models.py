@@ -28,7 +28,7 @@ class Post(models.Model):
     comment_auth = models.ManyToManyField(to=Auth_User, related_name='post_auth_commenter', blank=True)
     STATUS_CHOICES = [('1', 'Open'), ('2', 'Closed')]
     status = models.CharField(choices=STATUS_CHOICES,
-                              default='1', max_length=20)
+                              default='2', max_length=20)
     spotlight = models.BooleanField(default=False, db_index=True)
     spotlight_image = models.ImageField(upload_to='spotlight_image/', blank=True)
     spotlight_from = models.DateField(default=timezone.now, blank=True, null=True, db_index=True)

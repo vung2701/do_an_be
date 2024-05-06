@@ -35,7 +35,7 @@ def get_all_language(request, params):
     
 
 get_src_code_schemas = {
-    'properties': {'language_id': 'language_id'},
+    'properties': {'language_id': 'language_id', 'src_code_id': 'src_code_id'},
     'required': [],
     'bool_args': [],
     'int_args': [],
@@ -49,6 +49,10 @@ get_src_code_schemas = {
 @schema(schema=get_src_code_schemas)
 def get_src_code(request, params):
     if request.method == 'GET':
+        if params.get('src_code_id') is not None:
+            srcCode = models.SrcCode.objects.filter(src_code_id=params.get('src_code_id')).first()
+            ret = dict(error=0, srcCode=utils.obj_to_dict(srcCode))
+            return JsonResponse(data=ret)
         if params.get('language_id'):
             language_id = params.get('language_id')
             language = models.LanguageCode.objects.filter(id=language_id).first()

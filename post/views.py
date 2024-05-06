@@ -81,7 +81,8 @@ def get_post(request, params):
             ret = dict(error=0, post=utils.obj_to_dict(post))
         else:
             payload = utils.get_payload(request.GET, get_post_schemas['properties'])
-            ret = utils.get_data_in_page_and_fields(Post, 'post', payload, request.GET)
+            posts = Post.objects.filter(status='1') 
+            ret = utils.get_data_in_page_and_fields(posts, 'post', payload, request.GET)
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
