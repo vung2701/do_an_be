@@ -7,4 +7,5 @@ from . import views
 urlpatterns = [
     path('get_all_language', views.get_all_language),
     path('get_src_code', views.get_src_code),
+    path('create_update', views.create_update_src_code),
 ]

@@ -32,6 +32,9 @@ get_post_schemas = {
 @authentication_classes((SessionAuthentication, TokenAuthentication,))
 @schema(schema=get_post_schemas)
 def create_post(request, params):
+    base_user = request.user
+    if not base_user.is_authenticated:
+        return JsonResponse({'error': 'Invalid user'}, status=403)
     if request.method == 'POST':
         user_profile = Profile.objects.filter(user_id_profile=params.get('created_by')).first()
         post, created = Post.objects.get_or_create(id=params.get('id'))
@@ -53,6 +56,9 @@ def create_post(request, params):
 @authentication_classes(( TokenAuthentication,))
 @schema(schema=get_post_schemas)
 def update(request, params):
+    base_user = request.user
+    if not base_user.is_authenticated:
+        return JsonResponse({'error': 'Invalid user'}, status=403)
     if request.method == 'POST':
         post = Post.objects.filter(post_id=params.get('post_id')).first()
         if (request.user) != post.created_by:
