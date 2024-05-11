@@ -74,6 +74,28 @@ def update(request, params):
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
+    
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_post_schemas)
+def delete_post(request, params):
+    if request.method == 'POST':
+        base_user = request.user
+        if not base_user.user:
+            return JsonResponse({'error': 'Invalid user'}, status=403)
+        id = params.get('post_id')
+        post = Post.objects.filter(post_id=id).first()
+        if not post:
+            return JsonResponse({'error': 'Invalid playlist id'}, status=403)
+        if post.created_by != base_user:
+            return JsonResponse(status=403, data={'error': 'You do not have permission to delete.'})
+        post.delete()
+        ret = dict(error=0, message='Delete successfull!')
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+    
 
 
 @csrf_exempt

@@ -8,4 +8,5 @@ urlpatterns =[
     path('unlike', views.post_unlike),
     path('comment', views.post_comment),
     path('update', views.update),
+    path('delete', views.delete_post),
 ]

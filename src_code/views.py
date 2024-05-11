@@ -1,12 +1,14 @@
+import ast
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes
-from rest_framework.authentication import TokenAuthentication
+from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
 from my_utils import utils
 from post.models import Post
+from user.models import User
 
 from . import models
 from my_utils.schema import schema
@@ -37,33 +39,34 @@ def get_all_language(request, params):
     
 
 get_src_code_schemas = {
-    'properties': {'language_id': 'language_id', 'src_code_id': 'src_code_id','name': 'name', 'content': 'content', 'post_id': 'post_id'},
+    'properties': {'language_ids': 'language_ids', 'src_code_id': 'src_code_id','name': 'name', 'content': 'content', 'post_id': 'post_id', 'created_by': 'created_by'},
     'required': [],
     'bool_args': [],
     'int_args': [],
     'float_args': [],
-    'list_args': ['language_ids'],
 }
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((TokenAuthentication, SessionAuthentication))
 # @permission_classes((IsAuthenticated,))
 @schema(schema=get_src_code_schemas)
 def get_src_code(request, params):
     if request.method == 'GET':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required to create source code'}, status=401)
         if params.get('src_code_id') is not None:
             srcCode = models.SrcCode.objects.filter(src_code_id=params.get('src_code_id')).first()
             ret = dict(error=0, src_code=utils.obj_to_dict(srcCode))
             return JsonResponse(data=ret)
-        if params.get('language_id'):
-            language_id = params.get('language_id')
+        if params.get('language_ids'):
+            language_id = params.get('language_ids')
             language = models.LanguageCode.objects.filter(id=language_id).first()
             if language:
                 srcCodes = models.SrcCode.objects.filter(languages=language)
                 # srcCodes_list = [srcCode.to_dict() for srcCode in srcCodes]
                 payload = utils.get_payload(request.GET, get_src_code_schemas['properties'])
-                ret = utils.get_data_in_page_and_fields(srcCodes, 'srcCode', {}, request.GET)
+                ret = utils.get_data_in_page_and_fields(srcCodes, 'src_code', {}, request.GET)
                 return JsonResponse(data=ret)
             else:
                 return JsonResponse({'error': 'Language not found'}, status=404)
@@ -77,7 +80,7 @@ def get_src_code(request, params):
 
 @csrf_exempt
 @api_view(['POST'])
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((TokenAuthentication,SessionAuthentication))
 @schema(schema=get_src_code_schemas)
 def create_update_src_code(request, params):
     if request.method == 'POST':
@@ -85,12 +88,13 @@ def create_update_src_code(request, params):
             name = params.get('name')
             content = params.get('content')
             post_id = params.get('post_id')
-            language_ids = request.data.getlist('language_ids[]')
+            language_ids = params.get('language_ids') and ast.literal_eval(params.get('language_ids')) or []
             
             if not params.get('src_code_id'):
                 src_code = models.SrcCode.objects.create(
                     name=name,
                     content=content,
+                    created_by=request.user
                 )
                 if language_ids:
                     languages = models.LanguageCode.objects.filter(id__in=language_ids)
@@ -120,4 +124,26 @@ def create_update_src_code(request, params):
         
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+        
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_src_code_schemas)
+def delete_srccode(request, params):
+    if request.method == 'POST':
+        base_user = request.user
+        if not base_user.user:
+            return JsonResponse({'error': 'Invalid user'}, status=403)
+        id = params.get('post_id')
+        srcCode = models.SrcCode.objects.filter(post_id=id).first()
+        if not srcCode:
+            return JsonResponse({'error': 'Invalid playlist id'}, status=403)
+        if srcCode.created_by != base_user:
+            return JsonResponse(status=403, data={'error': 'You do not have permission to delete.'})
+        srcCode.delete()
+        ret = dict(error=0, message='Delete successfull!')
+        return JsonResponse(data=ret)
+    else:
+        return HttpResponse(status=403)
+    
        
