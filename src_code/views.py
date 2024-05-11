@@ -39,7 +39,8 @@ def get_all_language(request, params):
     
 
 get_src_code_schemas = {
-    'properties': {'language_ids': 'language_ids', 'src_code_id': 'src_code_id','name': 'name', 'content': 'content', 'post_id': 'post_id', 'created_by': 'created_by'},
+    'properties': {'language_ids': 'language_ids', 'src_code_id': 'src_code_id',
+                   'name': 'name', 'content': 'content', 'post_id': 'post_id', 'created_by': 'created_by'},
     'required': [],
     'bool_args': [],
     'int_args': [],

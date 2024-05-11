@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.db.models import Q
 from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from my_utils import utils
 from my_utils.schema import schema
@@ -19,7 +20,8 @@ import os
 get_post_schemas = {
     'properties': {'title': 'title', 'image': 'image', 'content': 'content', 'created_on': 'created_on',
                    'created_by': 'created_by', 'likes': 'likes', 'like_auth': 'like_auth', 'comments': 'comments',
-                   'comment_list': 'comment_list', 'comment_auth': 'comment_auth', 'post_id': 'post_id', 'id': 'id'},
+                   'comment_list': 'comment_list', 'comment_auth': 'comment_auth', 'post_id': 'post_id', 'id': 'id', 
+                   'search': 'search'},
     'required': [],
     'bool_args': [],
     'int_args': [],
@@ -104,13 +106,23 @@ def delete_post(request, params):
 @schema(schema=get_post_schemas)
 def get_post(request, params):
     if request.method == 'GET':
+        search = params.get('search') or None
+
         if params.get('post_id') is not None:
             post = Post.objects.filter(post_id=params.get('post_id')).first()
+            print(1)
+            print(post)
             ret = dict(error=0, post=utils.obj_to_dict(post))
         else:
-            payload = utils.get_payload(request.GET, get_post_schemas['properties'])
-            posts = Post.objects.filter(status='1') 
-            ret = utils.get_data_in_page_and_fields(posts, 'post', payload, request.GET)
+            if search:
+                search_condition = Q(title__icontains=search)
+                posts = Post.objects.filter((search_condition),  status='1').order_by('-created_on')
+                count = Post.objects.filter((search_condition),  status='1').count()
+                ret = dict(error=0, posts= [post.to_dict() for post in posts], total=count)
+            else:
+                payload = utils.get_payload(request.GET, get_post_schemas['properties'])
+                posts = Post.objects.filter(status='1') 
+                ret = utils.get_data_in_page_and_fields(posts, 'post', payload, request.GET)
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
