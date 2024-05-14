@@ -64,16 +64,21 @@ def get_src_code(request, params):
             language = models.LanguageCode.objects.filter(id=language_id).first()
             if language:
                 search = params.get('search') or None
-                user_search_condition = Q(created_by__username__icontains=search)
                 name_search_condition = Q(name__icontains=search)
-                srcCodes = models.SrcCode.objects.filter(user_search_condition | name_search_condition, languages=language)
+                srcCodes = models.SrcCode.objects.filter( name_search_condition, languages=language)
                 ret = utils.get_data_in_page_and_fields(srcCodes, 'src_code', {}, request.GET)
                 return JsonResponse(data=ret)
             else:
                 return JsonResponse({'error': 'Language not found'}, status=404)
         else:
-            payload = utils.get_payload(request.GET, get_src_code_schemas['properties'])
-            ret = utils.get_data_in_page_and_fields(models.SrcCode, 'src_code', payload, request.GET)
+            search = params.get('search') or None
+            if search:
+                name_search_condition = Q(name__icontains=search)
+                srcCodes = models.SrcCode.objects.filter(name_search_condition)
+                ret = utils.get_data_in_page_and_fields(srcCodes, 'src_code', {}, request.GET)
+            else:
+                payload = utils.get_payload(request.GET, get_src_code_schemas['properties'])
+                ret = utils.get_data_in_page_and_fields(models.SrcCode, 'src_code', payload, request.GET)
             return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
