@@ -58,6 +58,7 @@ class Post(models.Model):
             'comment_auth': [comment.id for comment in post.comment_auth.all()],
             'created_by': author_user_id,
             'created_by_image': author_user_profile.image.name if author_user_profile else None,
+            'created_by_name': author_user_profile.first_name + ' ' + author_user_profile.last_name ,
             'first_name_created_by': author_user_profile.first_name if author_user_profile else None,
             'last_name_created_by': author_user_profile.last_name if author_user_profile else None,
             'email_created_by': author_user_profile.email if author_user_profile else None,
