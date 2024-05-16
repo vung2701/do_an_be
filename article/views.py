@@ -157,11 +157,6 @@ def article_comment(request, params):
         comment.save()
         profile = Profile.objects.filter(user=comment.created_by).first()
         comment.created_by_image = profile.image
-        # if params.get('parent_comment__id') is not None:
-        #     parent_comment = Comment.objects.filter(id=int(params.get('parent_comment__id'))).first()
-        #     comment.parent_comment = parent_comment
-        #     comment.parent_article = parent_comment.parent_article
-        # comment.save()
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':

@@ -1,14 +1,21 @@
+from import_export import resources, fields
 import os
-from PIL import Image
-from django.contrib.sessions import base_session
 from django.db import models
 from django.contrib.auth.models import Group, User as AuthUser
 from django.utils import timezone
-from rest_framework.generics import ListAPIView
 # from .serializer import ImageSerializer
-from rest_framework import serializers
+from import_export.widgets import ForeignKeyWidget
 import uuid
+class Student(models.Model):
+    student_id = models.CharField(max_length=255,  null=False, unique=True)
+    student_class = models.CharField(max_length=255, blank=True, null=True)
 
+
+class StudentResource(resources.ModelResource):
+    class Meta:
+        model = Student
+        fields = ('student_id', 'student_class')
+        import_id_fields = ('student_id',)
 
 class User(models.Model):
     base_user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, null=True, default=None)
@@ -18,6 +25,7 @@ class User(models.Model):
     password1 = models.CharField(max_length=50)
     password2 = models.CharField(max_length=50)
     is_active = models.BooleanField(null=True)
+    student = models.OneToOneField(Student, on_delete=models.SET_NULL, null=True, blank=True) 
 
     def __str__(self):
         return f'{self.first_name}-{self.last_name}'
@@ -25,6 +33,7 @@ class User(models.Model):
     def to_dict(self):
         json_obj = dict(
             id=self.id,
+            student_id=self.student.student_id,
             first_name=self.first_name,
             last_name=self.last_name,
             email=self.email,
@@ -49,6 +58,7 @@ class Profile(models.Model):
     DOB = models.DateField(blank=True, null=True)
     modified_on = models.DateTimeField(default=timezone.now)
     created_on = models.DateTimeField(default=timezone.now)
+    student = models.OneToOneField(Student, on_delete=models.SET_NULL, null=True, blank=True) 
     def __str__(self):
         return f'{self.user.__str__()} Profile'
 
@@ -75,6 +85,8 @@ class Profile(models.Model):
             'major': profile.major, 'location': profile.location,
             'phone': profile.phone,
             'DOB': profile.DOB,
+            'student_id': self.student.student_id,
+            'student_class': self.student.student_class
         }
 
 

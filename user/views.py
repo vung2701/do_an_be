@@ -1,30 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from os import uname_result
 
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
 from django.contrib.auth import logout
-from django.contrib.auth.models import User as Auth_User
 from django.conf import settings
 from django.utils import timezone
-from pip._internal.network.session import user_agent
 from rest_framework.decorators import api_view, authentication_classes
-from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User as Auth_User
-from .tokens import account_activation_token
-# from rest_framework.permissions import IsAuthenticated
-from .models_utils import generate_password
-from django.shortcuts import render, redirect
 from my_utils import utils
 from my_utils.schema import schema
 
 from my_utils.authentication import TokenAuthentication
 # from my_utils.permissions import IsAuthenticated
 # from my_utils.decorators import avt_permission_required
-import requests
 from .models import User, Profile
 from . import models, models_utils
 from datetime import datetime, timedelta
@@ -359,4 +349,3 @@ def get_new_member(request, params):
         return JsonResponse(data=ret)
     else:
         return HttpResponse(status=403)
-

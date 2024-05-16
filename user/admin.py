@@ -1,10 +1,20 @@
+from django.urls import path
 from django.contrib import admin
+from django.shortcuts import redirect, render
 from django.utils.html import format_html
-from .models import User
-from .models import Profile
+import pandas as pd
+from .models import Profile, StudentResource
 from . import models
+from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
+from .models import Student
+class StudentAdmin(ImportExportModelAdmin):
+    resource_class = StudentResource
+    list_display = ('student_id', 'student_class')
 
-# admin.site.register(Profile)
+admin.site.register(Student, StudentAdmin)
+
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     search_fields = ['user_id_profile', 'base_user__username', 'base_user__email', 'base_user__first_name',
