@@ -52,22 +52,22 @@ def register(request, params):
         student = models.Student.objects.filter(student_id=params.get('student_id')).exists()
 
         if not student:
-            return JsonResponse({
+            return JsonResponse(data ={
                 'error': 'Student id does not exist',
                 'message': 'Student id does not exist'
-            }, status=400)
+            })
         
         existing_user = models.User.objects.filter(student__student_id=params.get('student_id')).exists()
 
         if existing_user:
-            return JsonResponse({
+            return JsonResponse(data = {
                 'error': 'Student id is already associated with another user',
                 'message': 'Student id is already associated with another user'
-            }, status=400)
+            })
         user_exits = User.objects.filter(email=params.get('email')).exists()
         if user_exits:
-            return JsonResponse({'error': 'Email is already associated with an existing account',
-                                'message': 'Email is already associated with an existing account'}, status=400)
+            return JsonResponse(data={'error': 'Email is already associated with an existing account',
+                                'message': 'Email is already associated with an existing account'})
         else:
             user = models_utils.create_new_user(**params)
             ret = dict(error=0, user=utils.obj_to_dict(user),
@@ -143,7 +143,7 @@ def get_user(request, params):
         if not user:
             return HttpResponse(status=403)
         ret = dict(error=0, user=dict(
-            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile role=list(user_roles)
+            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile, role=list(user_roles)
         ))
         return JsonResponse(data=ret)
     else:
@@ -189,7 +189,7 @@ get_profile_schemas = {
                    'first_name': 'first_name', 'last_name': 'last_name',
                    'email': 'email', 'base_user ': 'base_user',
                    'school': 'school', 'major': 'major', 'location': 'location',
-                   'phone': 'phone', 'DOB': 'DOB'},
+                   'phone': 'phone', 'DOB': 'DOB', 'class': "class"},
     'required': [],
     'bool_args': [],
     'int_args': [],
@@ -256,12 +256,12 @@ def get_profile(request, params):
 # @avt_permission_required(perm=['user.change_profile'])
 @schema(schema=get_profile_schemas)
 def edit_profile(request, params):
-    print(params)
     if request.method == 'POST':
         user_profile = Profile.objects.filter(user_id_profile=params.get('user_id')).first()
         if request.user.id != user_profile.base_user.id:
             return JsonResponse(status=403, data={'error': 'You do not have permission to edit this profile.'})
         user = user_profile.user
+        student = user_profile.student
         auth_user = user_profile.base_user
         first_name = params.get('first_name')
         last_name = params.get('last_name')
@@ -277,6 +277,10 @@ def edit_profile(request, params):
             auth_user.last_name = last_name
         else:
             return JsonResponse(status=500, data={'error': 'You cannot leave the last name blank'})
+        if params.get('class') is not None:
+            if params.get('class'):
+                user_profile.student.student_class = params.get('class')
+                student.student_class =params.get('class')
         if params.get('school') is not None:
             if params.get('school'):
                 user_profile.school = params.get('school')
@@ -294,6 +298,7 @@ def edit_profile(request, params):
             if params.get('DOB'):
                 user_profile.DOB = params.get('DOB')
         user_profile.save()
+        student.save()
         user.save()
         auth_user.save()
         ret = dict(error=0, profile=utils.obj_to_dict(user_profile))
