@@ -9,6 +9,17 @@ import uuid
 class Student(models.Model):
     student_id = models.CharField(max_length=255,  null=False, unique=True)
     student_class = models.CharField(max_length=255, blank=True, null=True)
+    def __str__(self):
+        return self.student_id
+
+    def to_dict(self):
+        json_obj = dict(
+            id=self.id,
+            student_id=self.student_id,
+            student_class=self.student_class,
+
+        )
+        return json_obj
 
 
 class StudentResource(resources.ModelResource):
@@ -33,7 +44,7 @@ class User(models.Model):
     def to_dict(self):
         json_obj = dict(
             id=self.id,
-            student_id=self.student.student_id,
+            student_id=self.student.student_id if self.student else None,
             first_name=self.first_name,
             last_name=self.last_name,
             email=self.email,
@@ -85,8 +96,8 @@ class Profile(models.Model):
             'major': profile.major, 'location': profile.location,
             'phone': profile.phone,
             'DOB': profile.DOB,
-            'student_id': self.student.student_id,
-            'student_class': self.student.student_class
+            'student_id': self.student.student_id if self.student else None,
+            'class': self.student.student_class if self.student else None
         }
 
 

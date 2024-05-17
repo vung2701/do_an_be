@@ -26,7 +26,7 @@ from rest_framework.authtoken.models import Token
 logger = logging.getLogger(__name__)
 
 get_register_schemas = {
-    'properties': {'user_id': 'user_id', 'first_name': 'first_name', 'last_name': 'last_name',
+    'properties': {'user_id': 'user_id', 'first_name': 'first_name', 'last_name': 'last_name', 'student_id': 'student_id',
                    'email': 'email', 'password1': 'password1', 'password2': 'password2'},
     'required': [],
     'bool_args': [],
@@ -48,14 +48,30 @@ def register(request, params):
     :return:
     """
     if request.method == 'POST':
+    # Try to fetch the student with the provided student_id
+        student = models.Student.objects.filter(student_id=params.get('student_id')).exists()
+
+        if not student:
+            return JsonResponse({
+                'error': 'Student id does not exist',
+                'message': 'Student id does not exist'
+            }, status=400)
+        
+        existing_user = models.User.objects.filter(student__student_id=params.get('student_id')).exists()
+
+        if existing_user:
+            return JsonResponse({
+                'error': 'Student id is already associated with another user',
+                'message': 'Student id is already associated with another user'
+            }, status=400)
         user_exits = User.objects.filter(email=params.get('email')).exists()
         if user_exits:
             return JsonResponse({'error': 'Email is already associated with an existing account',
-                                 'message': 'Email is already associated with an existing account'}, status=400)
+                                'message': 'Email is already associated with an existing account'}, status=400)
         else:
             user = models_utils.create_new_user(**params)
             ret = dict(error=0, user=utils.obj_to_dict(user),
-                       inform_msg='A verification link has been sent to your email. Please check your mailbox then click the link to verify your email in order to login.')
+                    inform_msg='A verification link has been sent to your email. Please check your mailbox then click the link to verify your email in order to login.')
             return JsonResponse(data=ret)
         # return HttpResponse('Please confirm your email address to complete the registration')
     else:
@@ -80,7 +96,8 @@ def verify_email(request, params, uidb64):
     """
     if request.method == 'GET':
         if models_utils.activate_user(uidb64, params.get('token')):
-            return HttpResponseRedirect('')
+            return HttpResponse('Success', status=200)
+            # return HttpResponseRedirect('http://localhost:5173/login')
         else:
             return HttpResponse('False to register user', status=500)
     else:
@@ -126,7 +143,7 @@ def get_user(request, params):
         if not user:
             return HttpResponse(status=403)
         ret = dict(error=0, user=dict(
-            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile, role=list(user_roles)
+            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile role=list(user_roles)
         ))
         return JsonResponse(data=ret)
     else:
@@ -201,7 +218,7 @@ def _get_profile(request, params):
             else:
                 request_profile = {'user_id_profile': profile.user_id_profile, 'first_name': profile.first_name,
                                'last_name':profile.last_name,'image': profile.image.name, 'school': profile.school,
-                                'major': profile.major}
+                                'major': profile.major, 'class': profile.student.student_class, 'student_id': profile.student.student_id}
                 ret = dict(error=0, profile=request_profile)
         else:
             payload = utils.get_payload(request.GET, get_profile_schemas['properties'])
