@@ -1,13 +1,11 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.db.models import Q
 from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from my_utils import utils
 from my_utils.schema import schema
-import logging
-import hashlib
 from .models import Post, CommentPost
 from user.models import Profile, User
 from django.contrib.auth.models import User as Auth_User

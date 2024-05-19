@@ -75,7 +75,7 @@ class Article(models.Model):
             'reference_link': article.reference_link,
             'spotlight': article.spotlight, 'spotlight_image': article.spotlight_image.name,
             'spotlight_from': article.spotlight_from, 'spotlight_to': article.spotlight_to,
-            "created_on": article.created_on, 'created_by': article.created_by.id,
+            "created_on": article.created_on, 'created_by': article.created_by.id if article.created_by else None,
             'likes': article.likes, 'like_list': [like.id for like in article.like_list.all()],
             'like_auth': [
                 profile.user_id_profile

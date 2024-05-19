@@ -2,7 +2,10 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-# Create your models here.
+from django.db import models
+import uuid
+from django.utils import timezone
+
 class KnowledgeType(models.Model):
     knowledge_type_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100)
@@ -18,11 +21,11 @@ class KnowledgeType(models.Model):
             name=self.name,
         )
         return json_obj
-    
+
 class Knowledge(models.Model):
     knowledge_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100)
-    knowledge_type = models.ForeignKey(KnowledgeType, on_delete=models.CASCADE)
+    knowledge_types = models.ManyToManyField(KnowledgeType, related_name='knowledges')
     created_on = models.DateTimeField(default=timezone.now)
     modified_on = models.DateTimeField(default=timezone.now)
 
@@ -33,6 +36,6 @@ class Knowledge(models.Model):
         json_obj = dict(
             knowledge_id=self.knowledge_id,
             name=self.name,
-            knowledge_type = self.knowledge_type.name
+            knowledge_types=[kt.name for kt in self.knowledge_types.all()]
         )
         return json_obj

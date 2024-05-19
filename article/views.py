@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from knowledge.models import Knowledge
+from knowledge.models import Knowledge, KnowledgeType
 from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from my_utils import utils
 from my_utils.schema import schema
@@ -330,9 +330,9 @@ get_article_knowledge_type = {
 def get_article_knowledge_type(request, params):
     if request.method == 'GET':
         if 'knowledge_type_id' in params:
-            print(params)
             knowledge_type_id = params.get('knowledge_type_id')
-            knowledge_objects = Knowledge.objects.filter(knowledge_type__knowledge_type_id=knowledge_type_id)
+            knowledge_type = KnowledgeType.objects.get(knowledge_type_id=knowledge_type_id)
+            knowledge_objects = Knowledge.objects.filter(knowledge_types=knowledge_type)
             articles = Article.objects.filter(knowledge__in=knowledge_objects)
             articles_list = [utils.obj_to_dict(article) for article in articles]
             ret = {'error': 0, 'articles': articles_list}
@@ -371,6 +371,7 @@ def get_spotlight(request, params):
         # payload = utils.get_payload(request.GET, get_spotlight_schemas['properties'])
         spotlight_article_items = Article.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
                                                  spotlight_from__lte=timezone.now().date())
+        print(spotlight_article_items.spotlight_image)
         spotlight_list = [{'category': 'Article', 'item_id': spotlight_item.article_id,
                            'spotlight_image': spotlight_item.spotlight_image.url,
                            'spotlight_from': spotlight_item.spotlight_from,
@@ -379,6 +380,7 @@ def get_spotlight(request, params):
                           for spotlight_item in spotlight_article_items]
         spotlight_post_items = Post.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
                                                          spotlight_from__lte=timezone.now().date())
+        print(spotlight_post_items)
         spotlight_post_list = [{'category': 'Post', 'item_id': spotlight_item.post_id,
                                 'spotlight_image': spotlight_item.spotlight_image.url,
                            'spotlight_from': spotlight_item.spotlight_from,

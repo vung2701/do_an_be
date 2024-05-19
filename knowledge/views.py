@@ -33,7 +33,7 @@ def get_all_type(request, params):
     
 
 get_knowledge_schemas = {
-    'properties': {'knowledge_type_id': 'knowledge_type_id'},
+    'properties': {'knowledge_type_ids': 'knowledge_type_ids'},
     'required': [],
     'bool_args': [],
     'int_args': [],
@@ -47,12 +47,14 @@ get_knowledge_schemas = {
 @schema(schema=get_knowledge_schemas)
 def get_knowledge(request, params):
     if request.method == 'GET':
-        knowledge_type_id = params.get('knowledge_type_id')
-        if knowledge_type_id:
-            knowledge_type = models.KnowledgeType.objects.filter(knowledge_type_id=knowledge_type_id).first()
-            if knowledge_type:
-                knowledges = models.Knowledge.objects.filter(knowledge_type=knowledge_type)
+        knowledge_type_ids = request.GET.getlist('knowledge_type_ids[]')
+        if knowledge_type_ids:
+            knowledge_types = models.KnowledgeType.objects.filter(knowledge_type_id__in=knowledge_type_ids)
+            if knowledge_types:
+                knowledges = models.Knowledge.objects.filter(knowledge_types__in=knowledge_types)
+                print(knowledges)
                 knowledge_list = [knowledge.to_dict() for knowledge in knowledges]
+                print(knowledge_list)
                 return JsonResponse({'error': 0, 'knowledges': knowledge_list})
             else:
                 return JsonResponse({'error': 'Knowledge type not found'}, status=404)
