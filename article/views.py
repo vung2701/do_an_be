@@ -371,7 +371,6 @@ def get_spotlight(request, params):
         # payload = utils.get_payload(request.GET, get_spotlight_schemas['properties'])
         spotlight_article_items = Article.objects.filter(spotlight=True, spotlight_to__gte=timezone.now().date(),
                                                  spotlight_from__lte=timezone.now().date())
-        print(spotlight_article_items.spotlight_image)
         spotlight_list = [{'category': 'Article', 'item_id': spotlight_item.article_id,
                            'spotlight_image': spotlight_item.spotlight_image.url,
                            'spotlight_from': spotlight_item.spotlight_from,
