@@ -14,7 +14,6 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='post/', null=True, blank=True)
     content = RichTextField(blank=True, null=True)
-    knowledge = models.ManyToManyField(Knowledge, related_name='post_knowledge', blank=True)
     src_code = models.ManyToManyField(SrcCode, related_name='post_src_code', blank=True)
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='post_created_by', null=True,
@@ -46,7 +45,6 @@ class Post(models.Model):
             'content': post.content,
             "created_on": post.created_on,
             'src_code': [src_code.src_code_id for src_code in post.src_code.all()],
-            'knowledge': [knowledge.knowledge_id for knowledge in post.knowledge.all()],
             'likes': post.likes, 'like_list': [like.id for like in post.like_list.all()],
             'like_auth': [
                 profile.user_id_profile

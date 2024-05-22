@@ -1,4 +1,3 @@
-from datetime import datetime
 from user.models import User, Profile
 def filter_article(payload,published_from,published_to,author_user):
     if published_from is not None or published_to is not None or author_user is not None:

@@ -26,14 +26,14 @@ class Article(models.Model):
     spotlight_from = models.DateField(default=timezone.now, blank=True, null=True, db_index=True)
     spotlight_to = models.DateField(blank=True, null=True, db_index=True)
     likes = models.PositiveIntegerField(default=0)
-    like_list = models.ManyToManyField(to=user_models.User, related_name='article_like_list', blank=True)
+    like_list = models.ManyToManyField(to=Auth_User, related_name='article_like_list', blank=True)
     like_auth = models.ManyToManyField(to=Auth_User, related_name='article_auth_liker', blank=True)
     comments = models.PositiveIntegerField(default=0)
     comment_list = models.ManyToManyField(to='article.Comment', related_name='article_comment_list', blank=True)
     comment_auth = models.ManyToManyField(to=Auth_User, related_name='article_auth_commenter', blank=True)
     reference_link = models.URLField(max_length=255, blank=True, null=True)
     created_on = models.DateTimeField(default=timezone.now)
-    created_by = models.ForeignKey(user_models.User, on_delete=models.CASCADE, related_name='article_created_by', null=True,
+    created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='article_created_by', null=True,
                                    blank=True)
     last_modified = models.DateTimeField(default=timezone.now)
 
