@@ -77,13 +77,6 @@ class CommentPost(models.Model):
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='post_comment_creator', null=True)
     created_by_first_name = models.CharField(max_length=255, blank=True, null=True)
     created_by_last_name = models.CharField(max_length=255, blank=True, null=True)
-    last_modified = models.DateTimeField(default=timezone.now)
-    likes = models.PositiveIntegerField(default=0)
-    like_auth = models.ManyToManyField(to=Auth_User, related_name='post_comment_auth_liker', blank=True)
-    comments = models.PositiveIntegerField(default=0)
-    comment_list = models.ManyToManyField(to='post.CommentPost', related_name='post_comment_comment_list', blank=True)
-    comment_auth = models.ManyToManyField(to=Auth_User, related_name='post_comment_auth_commenter', blank=True)
-
 
     def __str__(self):
         return self.description
@@ -99,18 +92,4 @@ class CommentPost(models.Model):
             'title': post_comment.title,
             "description": post_comment.description,
             'created_on': post_comment.created_on,
-            'likes':post_comment.likes,
-            'like_auth': [
-                profile.user_id_profile
-                for user in post_comment.like_auth.all()
-                for profile in user_models.Profile.objects.filter(base_user=user)
-            ],
-            'comments': post_comment.comments,
-            'comment_list': [comment.id for comment in post_comment.comment_list.all()],
-            'comment_auth': [comment.id for comment in post_comment.comment_auth.all()],
-            'created_by': author_user_id,
-            'created_by_image':author_user_profile.image.name,
-            'created_by_first_name': post_comment.created_by_first_name,
-            'created_by_last_name': post_comment.created_by_last_name,
-            'last_modified':post_comment.last_modified,
         }

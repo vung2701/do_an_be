@@ -89,11 +89,14 @@ def article_like(request, params):
                 auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
                 auth_user_id = auth_user_profile.base_user_id
                 base_user = Auth_User.objects.filter(id=auth_user_id).first()
-                liker = User.objects.filter(base_user=base_user).first()
-                article.like_list.add(liker)
+               
+                article.like_list.add(base_user)
                 article.like_auth.add(base_user)
                 article.save()
+            
             ret = dict(error=0, article=utils.obj_to_dict(article))
+            print(ret)
+
             return JsonResponse(data=ret)
         else:
             ret = dict(error=1, message='Article not found')
@@ -116,8 +119,7 @@ def article_unlike(request, params):
             auth_user_profile = Profile.objects.filter(user_id_profile=params.get('like_auth')).first()
             auth_user_id = auth_user_profile.base_user_id
             base_user = Auth_User.objects.filter(id=auth_user_id).first()
-            liker = User.objects.filter(base_user=base_user).first()
-            article.like_list.remove(liker)
+            article.like_list.remove(base_user)
             article.like_auth.remove(base_user)
             article.save()
             ret = dict(error=0, article=utils.obj_to_dict(article))
@@ -149,19 +151,22 @@ get_comment_schemas = {
 @schema(schema=get_comment_schemas)
 def article_comment(request, params):
     if request.method == 'POST':
+        article=Article.objects.filter(article_id=params.get('parent_article_id')).first()
         base_user = Auth_User.objects.filter(id=request.user.id).first()
         user = User.objects.filter(base_user=base_user).first()
         comment = Comment.objects.create(
             title=params.get('title'),
-            parent_article=Article.objects.filter(article_id=params.get('parent_article_id')).first(),
+            parent_article=article,
             description=params.get('description'),
             created_by = user
         )
         comment.created_by_first_name = comment.created_by.first_name
         comment.created_by_last_name = comment.created_by.last_name
-        comment.save()
         profile = Profile.objects.filter(user=comment.created_by).first()
         comment.created_by_image = profile.image
+        comment.save()
+        article.comments += 1
+        article.save()
         ret = dict(error=0, comment=utils.obj_to_dict(comment))
         return JsonResponse(data=ret)
     elif request.method == 'GET':

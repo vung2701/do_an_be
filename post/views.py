@@ -115,7 +115,8 @@ def delete_post(request, params):
             return JsonResponse({'error': 'Invalid post id'}, status=403)
         if post.created_by != base_user:
             return JsonResponse(status=403, data={'error': 'You do not have permission to delete.'})
-        post.delete()
+        post.status = '2'
+        post.save()
         ret = dict(error=0, message='Delete successfull!')
         return JsonResponse(data=ret)
     else:

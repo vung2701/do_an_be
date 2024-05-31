@@ -56,7 +56,7 @@ class User(models.Model):
 
 class Profile(models.Model):
     user_id_profile = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    user = models.OneToOneField('user.User', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     base_user = models.OneToOneField(to=AuthUser, on_delete=models.CASCADE, blank=True, null=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)

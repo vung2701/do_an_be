@@ -110,19 +110,12 @@ class Comment(models.Model):
                                        null=True, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    attachment = models.FileField(upload_to='comment_article/', blank=True, null=True)
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(user_models.User, on_delete=models.CASCADE, related_name='comment_creator', null=True)
     created_by_first_name = models.CharField(max_length=255, blank=True, null=True)
     created_by_last_name = models.CharField(max_length=255, blank=True, null=True)
     created_by_image = models.ImageField(upload_to='user_image', null=True, blank=True)
     last_modified = models.DateTimeField(default=timezone.now)
-    likes = models.PositiveIntegerField(default=0)
-    like_list = models.ManyToManyField(to=user_models.User, related_name='comment_like_list', blank=True)
-    like_auth = models.ManyToManyField(to=Auth_User, related_name='comment_auth_liker', blank=True)
-    comments = models.PositiveIntegerField(default=0)
-    comment_list = models.ManyToManyField(to='article.Comment', related_name='comment_comment_list', blank=True)
-    comment_auth = models.ManyToManyField(to=Auth_User, related_name='comment_auth_commenter', blank=True)
 
     def to_dict(self):
         json_obj = json.loads(serializers.serialize('json', [self]))[0].get('fields')
@@ -136,19 +129,12 @@ class Comment(models.Model):
                 'parent_comment': comment.parent_comment.id if comment.parent_comment else None,
                 'title': comment.title,
                 'description': comment.description,
-                'attachment': comment.attachment.name,
                 'created_on': comment.created_on,
                 'created_by': comment.created_by.id,
                 'created_by_first_name': comment.created_by_first_name,
                 'created_by_last_name': comment.created_by_last_name,
                 'created_by_image': comment.created_by_image.name,
                 'last_modified': comment.last_modified,
-                'likes': comment.likes,
-                'like_list': [user.id for user in comment.like_list.all()],
-                'like_auth': [user.id for user in comment.like_auth.all()],
-                'comments': comment.comments,
-                'comment_auth': [user.id for user in comment.comment_auth.all()],
-                'comment_list': [comment.id for comment in comment.comment_list.all()],
             }
         except Exception as e:
             # Print or log the error for debugging purposes
@@ -163,18 +149,12 @@ class Comment(models.Model):
                 'parent_comment': comment.parent_comment.id if comment.parent_comment else None,
                 'title': comment.title,
                 'description': comment.description,
-                'attachment': comment.attachment.name,
                 'created_on': comment.created_on,
                 'created_by': comment.created_by.id,
                 'created_by_first_name': comment.created_by_first_name,
                 'created_by_last_name': comment.created_by_last_name,
                 'created_by_image': comment.created_by_image.name,
                 'last_modified': comment.last_modified,
-                'likes': comment.likes,
-                'like_list': [user.id for user in comment.like_list.all()],
-                'comments': comment.comments,
-                'comment_auth': [user.id for user in comment.comment_auth.all()],
-                'comment_list': [comment.id for comment in comment.comment_list.all()],
             }
         except Exception as e:
             # Print or log the error for debugging purposes
