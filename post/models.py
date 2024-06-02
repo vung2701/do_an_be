@@ -14,6 +14,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='post/', null=True, blank=True)
     content = RichTextField(blank=True, null=True)
+    STATUS_CHOICES = [('1', 'Open'), ('2', 'Closed')]
     src_code = models.ManyToManyField(SrcCode, related_name='post_src_code', blank=True)
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='post_created_by', null=True,
@@ -25,7 +26,6 @@ class Post(models.Model):
     comments = models.PositiveIntegerField(default=0)
     comment_list = models.ManyToManyField(to='post.CommentPost', related_name='post_comment_list', blank=True)
     comment_auth = models.ManyToManyField(to=Auth_User, related_name='post_auth_commenter', blank=True)
-    STATUS_CHOICES = [('1', 'Open'), ('2', 'Closed')]
     status = models.CharField(choices=STATUS_CHOICES,
                               default='2', max_length=20)
     spotlight = models.BooleanField(default=False, db_index=True)

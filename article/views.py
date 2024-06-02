@@ -283,30 +283,30 @@ get_article_public_schemas = {
 def api_get_article_details(request, params):
     article_id = params.get('article_id')
     article = Article.objects.filter(article_id=article_id).first()
-    if request.user.is_authenticated:
-        ret = dict(error=0, article=article.article_to_dict(get_full=True))
-        return JsonResponse(data=ret)
-    else:
-        device_params = params.get('device')
-        browser_params = params.get('web_browser')
-        ip_params = params.get('ip_address')
-        user_public = get_user_public(device_params, browser_params, ip_params)
-        reading_list, created = ReadingList.objects.get_or_create(public_user=user_public)
-        exists_in_reading_list = reading_list.read_articles.filter(id=article.id).exists()
-        if reading_list.remain <=0 :
-            if exists_in_reading_list:
-                ret = dict(error=0, article=article.article_to_dict(get_full=True,get_full_audio=False))
-                return JsonResponse(data=ret)
-            else:
-                ret = dict(error=0, article=article.article_to_dict(get_full=False,get_full_audio=False))
-                return JsonResponse(data=ret)
-        else:
-            if not exists_in_reading_list:
-                reading_list.remain -=1
-                reading_list.read_articles.add(article)
-                reading_list.save()
-            ret =dict(error=0, article=article.article_to_dict(get_full=True))
-            return JsonResponse(data=ret)
+    # if request.user.is_authenticated:
+    ret = dict(error=0, article=article.article_to_dict(get_full=True))
+    return JsonResponse(data=ret)
+    # else:
+    #     device_params = params.get('device')
+    #     browser_params = params.get('web_browser')
+    #     ip_params = params.get('ip_address')
+    #     user_public = get_user_public(device_params, browser_params, ip_params)
+    #     reading_list, created = ReadingList.objects.get_or_create(public_user=user_public)
+    #     exists_in_reading_list = reading_list.read_articles.filter(id=article.id).exists()
+    #     if reading_list.remain <=0 :
+    #         if exists_in_reading_list:
+    #             ret = dict(error=0, article=article.article_to_dict(get_full=True,get_full_audio=False))
+    #             return JsonResponse(data=ret)
+    #         else:
+    #             ret = dict(error=0, article=article.article_to_dict(get_full=False,get_full_audio=False))
+    #             return JsonResponse(data=ret)
+    #     else:
+    #         if not exists_in_reading_list:
+    #             reading_list.remain -=1
+    #             reading_list.read_articles.add(article)
+    #             reading_list.save()
+    #         ret =dict(error=0, article=article.article_to_dict(get_full=True))
+    #         return JsonResponse(data=ret)
 
 
 def get_user_public(device, browser, ip):
