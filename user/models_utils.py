@@ -23,7 +23,7 @@ def send_registration_email(base_user):
     email_body_html_tpl = Template.objects.filter(name='registration_email.html_body').first()
     email_body_html = email_body_html_tpl.text.format(name=base_user.first_name,
                                                       link=f'/api/v1/user/verify/{uid}?token={token}')
-    ret = email.send_email(recipient_list=recipient_list, subject=email_subject, email_body=email_body_txt,
+    ret = email.send_email(recipient_list=recipient_list, subject=email_subject.text, email_body=email_body_txt,
                            email_body_html=email_body_html)
     return ret
 

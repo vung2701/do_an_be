@@ -41,7 +41,7 @@ def get_all_language(request, params):
 
 get_src_code_schemas = {
     'properties': {'language_ids': 'language_ids', 'src_code_id': 'src_code_id',
-                   'name': 'name', 'content': 'content', 'post_id': 'post_id', 'created_by': 'created_by', 'search' : 'search'},
+                   'name': 'name', 'content': 'content', 'post_id': 'post_id', 'article_id': 'article_id', 'created_by': 'created_by', 'search' : 'search'},
     'required': [],
     'bool_args': [],
     'int_args': [],
@@ -99,35 +99,29 @@ def create_update_src_code(request, params):
             content = params.get('content')
             post_id = params.get('post_id')
             language_ids = params.get('language_ids') and ast.literal_eval(params.get('language_ids')) or []
-            
+            post = Post.objects.filter(post_id=post_id).first()
             if not params.get('src_code_id'):
                 src_code = models.SrcCode.objects.create(
                     name=name,
                     content=content,
+                    post=post,
                     created_by=request.user
                 )
                 if language_ids:
                     languages = models.LanguageCode.objects.filter(id__in=language_ids)
                     src_code.languages.set(languages)
-                if post_id:
-                    post = Post.objects.get(post_id=post_id)
-                    post.src_code.add(src_code)
             else:
                 src_code_id = params.get('src_code_id')
                 src_code = models.SrcCode.objects.get(src_code_id=src_code_id)
                 src_code.name = name
+                src_code.post = post
                 src_code.content = content
                 src_code.modified_on = timezone.now()
                 src_code.languages.clear()
                 for language_id in language_ids:
                     language = models.LanguageCode.objects.get(id=language_id)
                     src_code.languages.add(language)
-                src_code.save()
-                
-                if post_id:
-                    post = Post.objects.get(post_id=post_id)
-                    post.src_code.add(src_code)
-                
+                src_code.save()         
             ret = dict(error=0, src_code=utils.obj_to_dict(src_code))
             return JsonResponse(data=ret)
         

@@ -6,7 +6,6 @@ from django.core import serializers
 from ckeditor.fields import RichTextField
 import uuid
 from knowledge.models import Knowledge
-from src_code.models import SrcCode
 from user import models as user_models
 
 class Article(models.Model):
@@ -20,7 +19,6 @@ class Article(models.Model):
     image = models.ImageField(upload_to='article/')
     content = RichTextField(blank=True, null=True)
     knowledge = models.ManyToManyField(Knowledge, related_name='article_knowledge', blank=True)
-    src_code = models.ManyToManyField(SrcCode, related_name='article_src_code', blank=True)
     spotlight = models.BooleanField(default=None, db_index=True)
     spotlight_image = models.ImageField(upload_to='spotlight_image/', blank=True)
     spotlight_from = models.DateField(default=timezone.now, blank=True, null=True, db_index=True)
@@ -70,7 +68,6 @@ class Article(models.Model):
             'published_on': article.published_on,
             'image': article.image.name,
             'content': article.content if get_full else article.content[:2000],
-            'src_code': [src_code.src_code_id for src_code in article.src_code.all()],
             'knowledge': [knowledge.knowledge_id for knowledge in article.knowledge.all()],
             'reference_link': article.reference_link,
             'spotlight': article.spotlight, 'spotlight_image': article.spotlight_image.name,

@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User as Auth_User
+from article.models import Article
 from post.models import Post
 from user import models as user_models
 from ckeditor.fields import RichTextField
@@ -25,6 +26,8 @@ class SrcCode(models.Model):
     content = RichTextField(blank=True, null=True)
     image = models.ImageField(upload_to='srccode/', null=True, blank=True)
     languages = models.ManyToManyField(LanguageCode, related_name='src_code_language', blank=True)
+    post=models.OneToOneField(Post, on_delete=models.SET_NULL, null=True, blank=True)
+    article=models.OneToOneField(Article, on_delete=models.SET_NULL, null=True, blank=True)
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='src_code_created_by', null=True,
                                    blank=True)
@@ -43,6 +46,8 @@ class SrcCode(models.Model):
             "content": self.content,
             "languages":  [language.name for language in self.languages.all()],
             "language_ids":[language.id for language in self.languages.all()],
+            "post_id": self.post.post_id if self.post else None,
+            "article_id": self.article.article_id if self.article else None,
             'created_by': author_user_id,
             'created_by_image': author_user_profile.image.name if author_user_profile else None,
             'created_by_name': author_user_profile.first_name + author_user_profile.last_name,
