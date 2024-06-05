@@ -73,6 +73,7 @@ class CommentPost(models.Model):
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='post_comment_creator', null=True)
     created_by_first_name = models.CharField(max_length=255, blank=True, null=True)
     created_by_last_name = models.CharField(max_length=255, blank=True, null=True)
+    created_by_image = models.ImageField(upload_to='user_image', null=True, blank=True)
 
     def __str__(self):
         return self.description
@@ -88,4 +89,5 @@ class CommentPost(models.Model):
             'title': post_comment.title,
             "description": post_comment.description,
             'created_on': post_comment.created_on,
+            'created_by_image': post_comment.created_by_image.name,
         }

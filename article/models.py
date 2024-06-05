@@ -114,6 +114,9 @@ class Comment(models.Model):
     created_by_image = models.ImageField(upload_to='user_image', null=True, blank=True)
     last_modified = models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return self.description
+
     def to_dict(self):
         json_obj = json.loads(serializers.serialize('json', [self]))[0].get('fields')
         json_obj['id'] = self.id
@@ -158,5 +161,3 @@ class Comment(models.Model):
             print(f"Error in comment_to_dict(): {e}")
             return {'error': 'Failed to convert comment to dictionary'}
 
-    def __str__(self):
-        return f'{self.title}-{self.created_by}-{self.last_modified}'

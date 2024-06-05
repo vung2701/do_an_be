@@ -42,12 +42,6 @@ class User(models.Model):
     def __str__(self):
         return f'{self.first_name}-{self.last_name}'
     
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # Update the student field in the associated Profile model if it exists
-        if self.profile and self.profile.student != self.student:
-            self.profile.student = self.student
-            self.profile.save()
 
     def to_dict(self):
         json_obj = dict(
@@ -88,7 +82,7 @@ class Profile(models.Model):
         if self.user and self.user.student != self.student:
             self.user.student = self.student
             self.user.save()
-            
+        
         if self.student:
             self.student.is_use = True
             self.student.save()

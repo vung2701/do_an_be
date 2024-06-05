@@ -16,14 +16,14 @@ def send_registration_email(base_user):
     uid = urlsafe_base64_encode(force_bytes(base_user.email))
     token = account_activation_token.make_token(base_user)
 
-    email_subject = Template.objects.filter(name='registration_email.subject').first()
+    email_subject = 'ITV Registration - Email Verification'
     email_body_tpl = Template.objects.filter(name='registration_email.body').first()
     email_body_txt = email_body_tpl.text.format(name=base_user.first_name,
                                                 link=f'/api/v1/user/verify/{uid}?token={token}')
     email_body_html_tpl = Template.objects.filter(name='registration_email.html_body').first()
     email_body_html = email_body_html_tpl.text.format(name=base_user.first_name,
                                                       link=f'/api/v1/user/verify/{uid}?token={token}')
-    ret = email.send_email(recipient_list=recipient_list, subject=email_subject.text, email_body=email_body_txt,
+    ret = email.send_email(recipient_list=recipient_list, subject=email_subject, email_body=email_body_txt,
                            email_body_html=email_body_html)
     return ret
 

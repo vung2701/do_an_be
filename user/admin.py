@@ -29,7 +29,7 @@ class ProfileAdmin(admin.ModelAdmin):
 @admin.register(models.User)
 class UserAdmin(admin.ModelAdmin):
     search_fields = []
-    list_display = ['id', 'user_profile', 'user_id','student_id', 'is_active']
+    list_display = ['id', 'user_profile', 'user_id','student', 'is_active']
     list_display_links = ['id']
     list_filter = []
 
