@@ -69,7 +69,7 @@ def get_src_code(request, params):
                     srcCodes = models.SrcCode.objects.filter( name_search_condition, languages=language)
                     ret = utils.get_data_in_page_and_fields(srcCodes, 'src_code', {}, request.GET)
                 else:
-                    srcCodes = models.SrcCode.objects.filter(  languages=language)
+                    srcCodes = models.SrcCode.objects.filter(languages=language)
                     ret = utils.get_data_in_page_and_fields(srcCodes, 'src_code', {}, request.GET)
                 return JsonResponse(data=ret)
             else:

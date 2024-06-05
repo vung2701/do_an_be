@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User as Auth_User
+from post.models import Post
 from user import models as user_models
 from ckeditor.fields import RichTextField
 
@@ -45,6 +46,6 @@ class SrcCode(models.Model):
             'created_by': author_user_id,
             'created_by_image': author_user_profile.image.name if author_user_profile else None,
             'created_by_name': author_user_profile.first_name + author_user_profile.last_name,
-            'created_by_chool': author_user_profile.school
+            'created_by_chool': author_user_profile.school,
         }   
     
