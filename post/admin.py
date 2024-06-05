@@ -6,7 +6,7 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ['title']
     list_display = ['title', 'created_by','post_id','spotlight', 'status']
     list_display_links = ['title']
-    list_filter = []
+    list_filter = ['status']
 @admin.register(CommentPost)
 class CommentPostAdmin(admin.ModelAdmin):
     search_fields = ['title',  'description' 'parent_post' ]

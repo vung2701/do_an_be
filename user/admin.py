@@ -10,7 +10,9 @@ from import_export.admin import ImportExportModelAdmin
 from .models import Student
 class StudentAdmin(ImportExportModelAdmin):
     resource_class = StudentResource
-    list_display = ('student_id', 'student_class')
+    search_fields = ['student_id']
+    list_display = ('id', 'student_id', 'student_class', 'is_use')
+    list_filter = ['student_class', 'is_use']
 
 admin.site.register(Student, StudentAdmin)
 
@@ -27,7 +29,7 @@ class ProfileAdmin(admin.ModelAdmin):
 @admin.register(models.User)
 class UserAdmin(admin.ModelAdmin):
     search_fields = []
-    list_display = ['id', 'user_profile', 'user_id']
+    list_display = ['id', 'user_profile', 'user_id','student_id', 'is_active']
     list_display_links = ['id']
     list_filter = []
 

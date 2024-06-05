@@ -11,7 +11,7 @@ class LanguageCode(admin.ModelAdmin):
 admin.site.register(models.SrcCode)
 class SrcCode(admin.ModelAdmin):
     search_fields = ['name']
-    list_display = ['id', 'name']
+    list_display = ['id', 'name', 'languages']
     list_display_links = ['id']
     list_filter = []
     inlines = []

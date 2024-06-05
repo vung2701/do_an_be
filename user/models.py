@@ -9,6 +9,7 @@ import uuid
 class Student(models.Model):
     student_id = models.CharField(max_length=255,  null=False, unique=True)
     student_class = models.CharField(max_length=255, blank=True, null=True)
+    is_use=models.BooleanField(default=False)
     def __str__(self):
         return self.student_id
 
@@ -17,7 +18,7 @@ class Student(models.Model):
             id=self.id,
             student_id=self.student_id,
             student_class=self.student_class,
-
+            is_use=self.is_use
         )
         return json_obj
 
@@ -35,11 +36,18 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     password1 = models.CharField(max_length=50)
     password2 = models.CharField(max_length=50)
-    is_active = models.BooleanField(null=True)
+    is_active = models.BooleanField(default=False)
     student = models.OneToOneField(Student, on_delete=models.SET_NULL, null=True, blank=True) 
 
     def __str__(self):
         return f'{self.first_name}-{self.last_name}'
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update the student field in the associated Profile model if it exists
+        if self.profile and self.profile.student != self.student:
+            self.profile.student = self.student
+            self.profile.save()
 
     def to_dict(self):
         json_obj = dict(
@@ -77,9 +85,20 @@ class Profile(models.Model):
         if not self.user_id_profile:
             self.user_id_profile = uuid.uuid4
         super().save(*args, **kwargs)
+        if self.user and self.user.student != self.student:
+            self.user.student = self.student
+            self.user.save()
+            
+        if self.student:
+            self.student.is_use = True
+            self.student.save()
     
-
-
+    def delete(self, *args, **kwargs):
+        if self.student:
+            self.student.is_use = False
+            self.student.save()
+        super().delete(*args, **kwargs)
+    
     def upload_to(instance, filename):
         return '/'.join(['images', str(instance.name), filename])
 
