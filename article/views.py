@@ -7,7 +7,6 @@ from my_utils.authentication import SessionAuthentication, TokenAuthentication
 from my_utils import utils
 from my_utils.schema import schema
 from post.models import Post
-from unreg_user.models import Device, IPObject, PublicUser, ReadingList, WebBrowser
 from .models import  Article, Comment
 from user.models import User, Profile
 from django.contrib.auth.models import User as Auth_User
@@ -77,8 +76,6 @@ def get_article(request, params):
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @authentication_classes((TokenAuthentication,))
-# @permission_classes((IsAuthenticated,))
-# @avt_permission_required(perm=['news.view_article'])
 @schema(schema=get_article_schemas)
 def article_like(request, params):
     if request.method == 'POST':
@@ -108,8 +105,6 @@ def article_like(request, params):
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication,))
-# @permission_classes((IsAuthenticated,))
-# @avt_permission_required(perm=['news.change_article'])
 @schema(schema=get_article_schemas)
 def article_unlike(request, params):
     if request.method == 'POST':
@@ -133,12 +128,12 @@ def article_unlike(request, params):
     
 get_comment_schemas = {
     'properties': {'title': 'title', 'description': 'description', 'parent_article': 'parent_article_id',
-                   'parent_comment': 'parent_comment__id', 'attachment': 'attachment', 'created_by': 'created_by',
+                   'parent_comment': 'parent_comment__id', 'created_by': 'created_by',
                    'created_by_first_name': 'created_by_first_name',
                    'created_by_last_name': 'created_by_last_name',
                    'created_by_image': 'created_by_image',
-                   'comment_id': 'comment_id', 'like_list': 'like_list', 'share_list': 'share_list',
-                   'like_auth': 'like_auth', 'share_auth': 'share_auth', },
+                   'comment_id': 'comment_id', 'like_list': 'like_list', 
+                   'like_auth': 'like_auth',  },
     'required': [],
     'bool_args': [],
     'int_args': ['parent_comment__id'],
@@ -283,49 +278,9 @@ get_article_public_schemas = {
 def api_get_article_details(request, params):
     article_id = params.get('article_id')
     article = Article.objects.filter(article_id=article_id).first()
-    # if request.user.is_authenticated:
     ret = dict(error=0, article=article.article_to_dict(get_full=True))
     return JsonResponse(data=ret)
-    # else:
-    #     device_params = params.get('device')
-    #     browser_params = params.get('web_browser')
-    #     ip_params = params.get('ip_address')
-    #     user_public = get_user_public(device_params, browser_params, ip_params)
-    #     reading_list, created = ReadingList.objects.get_or_create(public_user=user_public)
-    #     exists_in_reading_list = reading_list.read_articles.filter(id=article.id).exists()
-    #     if reading_list.remain <=0 :
-    #         if exists_in_reading_list:
-    #             ret = dict(error=0, article=article.article_to_dict(get_full=True,get_full_audio=False))
-    #             return JsonResponse(data=ret)
-    #         else:
-    #             ret = dict(error=0, article=article.article_to_dict(get_full=False,get_full_audio=False))
-    #             return JsonResponse(data=ret)
-    #     else:
-    #         if not exists_in_reading_list:
-    #             reading_list.remain -=1
-    #             reading_list.read_articles.add(article)
-    #             reading_list.save()
-    #         ret =dict(error=0, article=article.article_to_dict(get_full=True))
-    #         return JsonResponse(data=ret)
-
-
-def get_user_public(device, browser, ip):
-    if device is not None:
-        device_objects, created = Device.objects.get_or_create(custom_fingerprint=device)
-    if browser is not None:
-        web_browser_objects, created = WebBrowser.objects.get_or_create(custom_fingerprint=browser)
-    if ip is not None:
-        ip_object, created = IPObject.objects.get_or_create(ip_address=ip)
-    user_public, created = PublicUser.objects.get_or_create(web_browser=web_browser_objects)
-    if created:
-        if device is not None:
-            user_public.device = device_objects
-        if ip is not None:
-            user_public.ip = ip_object
-        user_public.save()
-    return user_public
-
-
+   
     
 get_spotlight_schemas = {
 'properties': {'category': 'category', 'item_id': 'item_id', 'spotlight_image': 'spotlight_image',
