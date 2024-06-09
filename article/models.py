@@ -70,10 +70,14 @@ class Article(models.Model):
             'content': article.content if get_full else article.content[:2000],
             'knowledge': [knowledge.knowledge_id for knowledge in article.knowledge.all()],
             'reference_link': article.reference_link,
-            'spotlight': article.spotlight, 'spotlight_image': article.spotlight_image.name,
-            'spotlight_from': article.spotlight_from, 'spotlight_to': article.spotlight_to,
-            "created_on": article.created_on, 'created_by': article.created_by.id if article.created_by else None,
-            'likes': article.likes, 'like_list': [like.id for like in article.like_list.all()],
+            'spotlight': article.spotlight,
+            'spotlight_image': article.spotlight_image.name,
+            'spotlight_from': article.spotlight_from,
+            'spotlight_to': article.spotlight_to,
+            "created_on": article.created_on,
+            'created_by': article.created_by.id if article.created_by else None,
+            'likes': article.likes,
+            'like_list': [like.id for like in article.like_list.all()],
             'like_auth': [
                 profile.user_id_profile
                 for user in article.like_auth.all()
@@ -82,20 +86,8 @@ class Article(models.Model):
             'comments': article.comments,
             'comment_list': [comment.id for comment in article.comment_list.all()],
             'comment_auth': [comment.id for comment in article.comment_auth.all()],
-            'limit': False if get_full else True,
         }
 
-    def article_short(self):
-        article = self
-
-        return {
-            'article_id': article.article_id,
-            'title': article.title,
-            'author_user': article.author_user,
-            'published_on': article.published_on,
-            'image': article.image.name,
-            'content': article.content[:1000],
-        }
 
     def __str__(self):
         return f'{self.title}-{self.author_user}-{self.published_on}'

@@ -54,7 +54,7 @@ def register(request, params):
         if not student:
             return JsonResponse(data ={
                 'error': 'Student id does not exist',
-                'message': 'Student id does not exist'
+                'message': 'STUDENT_NOT_EXIST'
             })
         
         existing_user = models.User.objects.filter(student__student_id=params.get('student_id')).exists()
@@ -62,16 +62,16 @@ def register(request, params):
         if existing_user:
             return JsonResponse(data = {
                 'error': 'Student id is already associated with another user',
-                'message': 'Student id is already associated with another user'
+                'message': 'STUDENT_EXISTED'
             })
         user_exits = User.objects.filter(email=params.get('email')).exists()
         if user_exits:
             return JsonResponse(data={'error': 'Email is already associated with an existing account',
-                                'message': 'Email is already associated with an existing account'})
+                                'message': 'EMAIL_EXISTED'})
         else:
             user = models_utils.create_new_user(**params)
             ret = dict(error=0, user=utils.obj_to_dict(user),
-                    inform_msg='A verification link has been sent to your email. Please check your mailbox then click the link to verify your email in order to login.')
+                    inform_msg='EMAIL_VERIFY')
             return JsonResponse(data=ret)
         # return HttpResponse('Please confirm your email address to complete the registration')
     else:

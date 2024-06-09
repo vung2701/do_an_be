@@ -218,7 +218,6 @@ def post_comment(request, params):
             post = Post.objects.filter(post_id=params.get('parent_post_id')).first()
             id = post.id
             comments = CommentPost.objects.filter(parent_post=post)
-            article_id_value = request.GET.get('article_id')
             request.GET = request.GET.copy()
             request.GET['parent_post'] = id
             payload = utils.get_payload(request.GET, get_comment_schemas['properties'])

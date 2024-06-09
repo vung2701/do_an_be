@@ -149,4 +149,34 @@ def delete_srccode(request, params):
     else:
         return HttpResponse(status=403)
     
+
+@csrf_exempt
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+@schema(schema=get_src_code_schemas)
+def get_src_code_id(request, params):
+    if request.method == 'GET':
+        base_user = request.user
+        if not hasattr(base_user, 'user'):
+            return JsonResponse({'error': 'Invalid user'}, status=403)
+        
+        article_id = params.get('article_id')
+        post_id = params.get('post_id')
+
+        if article_id:
+            src_code = models.SrcCode.objects.filter(article__article_id=article_id).first()
+            if src_code:
+                ret = {'error': 0, 'src_code': utils.obj_to_dict(src_code)}
+                return JsonResponse(data=ret)
+        
+        elif post_id:
+            src_code = models.SrcCode.objects.filter(post__post_id=post_id).first()
+            if src_code:
+                ret = {'error': 0, 'src_code': utils.obj_to_dict(src_code)}
+                return JsonResponse(data=ret)
+        ret = dict(error=0, message='no data')
+
+    else:
+        return HttpResponse(status=403)
+    
        
