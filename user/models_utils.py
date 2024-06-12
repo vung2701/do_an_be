@@ -89,6 +89,10 @@ def activate_user(uidb64, token):
         if not user.is_active:
             user.is_active = True
             user.save()
+            related_user = models.User.objects.filter(base_user=user).first()
+            if related_user:
+                related_user.is_active = True
+                related_user.save()
         return True
     else:
         return False

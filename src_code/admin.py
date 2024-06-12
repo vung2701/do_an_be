@@ -13,5 +13,5 @@ class SrcCode(admin.ModelAdmin):
     search_fields = ['name']
     list_display = ['id', 'name', 'languages']
     list_display_links = ['id']
-    list_filter = []
+    list_filter = ['languages']
     inlines = []

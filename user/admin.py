@@ -1,9 +1,10 @@
+from django import forms
 from django.urls import path
 from django.contrib import admin
 from django.shortcuts import redirect, render
 from django.utils.html import format_html
 import pandas as pd
-from .models import Profile, StudentResource
+from .models import Profile, StudentResource, User
 from . import models
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
@@ -26,10 +27,12 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = []
     inlines = []
 
-@admin.register(models.User)
+
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    search_fields = []
-    list_display = ['id', 'user_profile', 'user_id','student', 'is_active']
+    search_fields = [ 'base_user__username', 'base_user__email', 'base_user__first_name',
+                     'base_user__last_name']
+    list_display = ('id', 'student', 'is_active')
     list_display_links = ['id']
     list_filter = []
 

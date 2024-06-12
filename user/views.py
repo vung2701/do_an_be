@@ -96,8 +96,8 @@ def verify_email(request, params, uidb64):
     """
     if request.method == 'GET':
         if models_utils.activate_user(uidb64, params.get('token')):
-            return HttpResponse('Success', status=200)
-            # return HttpResponseRedirect('http://localhost:5173/login')
+            # return HttpResponse('Success', status=200)
+            return HttpResponseRedirect('http://localhost:5173/login')
         else:
             return HttpResponse('False to register user', status=500)
     else:
@@ -143,7 +143,7 @@ def get_user(request, params):
         if not user:
             return HttpResponse(status=403)
         ret = dict(error=0, user=dict(
-            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile, role=list(user_roles)
+            first_name=user.first_name, last_name=user.last_name, user_id=profile.user_id_profile, role=list(user_roles), is_active=user.is_active
         ))
         return JsonResponse(data=ret)
     else:
@@ -361,7 +361,7 @@ def get_new_member(request, params):
     if request.method == 'GET':
         today = datetime.now()
         start_date = today.date() - timedelta(days=30)
-        new_members = Profile.objects.filter().order_by('-created_on')[:6]
+        new_members = Profile.objects.filter(created_on__range=(start_date, today))
         project_list = [{'user_id': profile.user_id_profile,
                          'first_name': profile.first_name, 'last_name': profile.last_name,
                          'email': profile.email, 'image': profile.image.name, 'school': profile.school,
