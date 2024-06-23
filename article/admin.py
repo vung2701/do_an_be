@@ -21,6 +21,7 @@ class ArticleAdmin(admin.ModelAdmin):
     list_display = ['title', 'author', 'get_knowledges', 'get_knowledge_types', 'published_on']
     list_display_links = ['title']
     list_filter = [KnowledgeTypeFilter]
+    list_per_page = 10 
 
     def get_knowledges(self, obj):
         return ", ".join([knowledge.name for knowledge in obj.knowledge.all()])
@@ -38,6 +39,7 @@ class CommentAdmin(admin.ModelAdmin):
     search_fields = ['description', 'parent_article']
     list_display = ['id', 'description', 'parent_article', 'created_by', 'created_on']
     list_filter = []
+    list_per_page = 10 
 
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(Comment, CommentAdmin)

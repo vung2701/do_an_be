@@ -34,7 +34,7 @@ class UserAdmin(admin.ModelAdmin):
                      'base_user__last_name']
     list_display = ('id','user_profile', 'user_id', 'student', 'is_active')
     list_display_links = ['id']
-    list_filter = []
+    list_filter = ['is_active']
 
     inlines = []
 

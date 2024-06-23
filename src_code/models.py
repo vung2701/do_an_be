@@ -31,7 +31,6 @@ class SrcCode(models.Model):
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(Auth_User, on_delete=models.CASCADE, related_name='src_code_created_by', null=True,
                                    blank=True)
-    created_on = models.DateTimeField(default=timezone.now)
     modified_on = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

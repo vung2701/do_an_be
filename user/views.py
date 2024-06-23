@@ -134,8 +134,8 @@ def get_user(request, params):
         user = models.AuthUser.objects.filter(id=request.user.id).first()
         profile = models.Profile.objects.filter(base_user=user.id).first()
         # user_groups = user.groups.values_list('name', flat=True)
-        if not user.groups.filter(name=models.UserRole.user).exists():
-            normal_user_group = models.Group.objects.get(name=models.UserRole.user)
+        if not user.groups.filter(name=models.UserRole.employee).exists():
+            normal_user_group = models.Group.objects.get(name=models.UserRole.employee)
             user.groups.add(normal_user_group)
 
         user_roles = user.groups.filter(name__startswith='role_').values_list('name', flat=True)
